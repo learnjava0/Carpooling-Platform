@@ -30,6 +30,15 @@ public class Vehicle {
     @Column(nullable = false)
     private int seatingCapacity;
 
+    @Column(name = "insurance_document")
+    private String insuranceDocument;
+
+    @Column(name = "registration_document")
+    private String registrationDocument;
+
+    @Column(name = "pollution_document")
+    private String pollutionDocument;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

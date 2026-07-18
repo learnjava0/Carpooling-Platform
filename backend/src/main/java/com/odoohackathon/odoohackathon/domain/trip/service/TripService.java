@@ -12,6 +12,7 @@ import com.odoohackathon.odoohackathon.domain.user.dto.UserDTO;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
 import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
 import com.odoohackathon.odoohackathon.domain.vehicle.dto.VehicleDTO;
+import com.odoohackathon.odoohackathon.domain.notification.service.TwilioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
+    private final TwilioService twilioService;
 
     @Transactional
     public TripDTO bookTrip(String userEmail, TripRequest request) {
@@ -50,15 +52,23 @@ public class TripService {
 
         BigDecimal totalFare = ride.getFarePerSeat().multiply(BigDecimal.valueOf(request.getBookedSeats()));
 
+        String otp = twilioService.generateOtp();
+
         Trip trip = Trip.builder()
                 .ride(ride)
                 .passenger(passenger)
                 .bookedSeats(request.getBookedSeats())
                 .totalFare(totalFare)
                 .status(TripStatus.BOOKED)
+                .startOtp(otp)
                 .build();
 
         trip = tripRepository.save(trip);
+
+        if (passenger.getPhoneNumber() != null && !passenger.getPhoneNumber().isEmpty()) {
+            twilioService.sendOtpSms(passenger.getPhoneNumber(), otp);
+        }
+
         return mapToDto(trip);
     }
 
@@ -83,6 +93,23 @@ public class TripService {
         }
 
         trip.setStatus(TripStatus.valueOf(status.toUpperCase()));
+        return mapToDto(tripRepository.save(trip));
+    }
+
+    @Transactional
+    public TripDTO verifyOtpAndStartTrip(Long tripId, String otp, String driverEmail) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        if (!trip.getRide().getDriver().getEmail().equals(driverEmail)) {
+            throw new IllegalArgumentException("Only the driver can start the trip");
+        }
+
+        if (trip.getStartOtp() == null || !trip.getStartOtp().equals(otp)) {
+            throw new IllegalArgumentException("Invalid OTP");
+        }
+
+        trip.setStatus(TripStatus.STARTED);
         return mapToDto(tripRepository.save(trip));
     }
 

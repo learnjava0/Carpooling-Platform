@@ -40,6 +40,9 @@ public class User {
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @Column(name = "driver_license")
+    private String driverLicense;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

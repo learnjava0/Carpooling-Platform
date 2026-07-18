@@ -42,4 +42,14 @@ public class TripController {
         String driverEmail = authentication.getName();
         return ResponseEntity.ok(tripService.updateTripStatus(tripId, status, driverEmail));
     }
+
+    @PostMapping("/{tripId}/verify-otp")
+    public ResponseEntity<TripDTO> verifyOtpAndStart(
+            @PathVariable Long tripId,
+            @RequestParam String otp,
+            Authentication authentication
+    ) {
+        String driverEmail = authentication.getName();
+        return ResponseEntity.ok(tripService.verifyOtpAndStartTrip(tripId, otp, driverEmail));
+    }
 }

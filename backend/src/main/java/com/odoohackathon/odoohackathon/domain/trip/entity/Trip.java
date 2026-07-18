@@ -38,6 +38,9 @@ public class Trip {
     @Builder.Default
     private TripStatus status = TripStatus.BOOKED;
 
+    @Column(name = "start_otp")
+    private String startOtp;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

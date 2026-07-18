@@ -1,0 +1,164 @@
+package com.odoohackathon.odoohackathon.domain.admin.controller;
+
+import com.odoohackathon.odoohackathon.domain.user.dto.UserDTO;
+import com.odoohackathon.odoohackathon.domain.user.entity.Company;
+import com.odoohackathon.odoohackathon.domain.user.entity.Role;
+import com.odoohackathon.odoohackathon.domain.user.entity.User;
+import com.odoohackathon.odoohackathon.domain.user.repository.CompanyRepository;
+import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
+import com.odoohackathon.odoohackathon.domain.vehicle.dto.VehicleDTO;
+import com.odoohackathon.odoohackathon.domain.vehicle.entity.Vehicle;
+import com.odoohackathon.odoohackathon.domain.vehicle.repository.VehicleRepository;
+import com.odoohackathon.odoohackathon.domain.trip.repository.TripRepository;
+import com.odoohackathon.odoohackathon.domain.payment.entity.Wallet;
+import com.odoohackathon.odoohackathon.domain.payment.repository.WalletRepository;
+import com.odoohackathon.odoohackathon.domain.admin.dto.DriverOnboardRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/admin")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminController {
+
+    private final UserRepository userRepository;
+    private final VehicleRepository vehicleRepository;
+    private final TripRepository tripRepository;
+    private final CompanyRepository companyRepository;
+    private final WalletRepository walletRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @PostMapping("/drivers/onboard")
+    @Transactional
+    public ResponseEntity<UserDTO> onboardDriver(@RequestBody DriverOnboardRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
+        String emailDomain = request.getEmail().substring(request.getEmail().indexOf("@") + 1);
+        Company company = companyRepository.findByEmailDomain(emailDomain)
+                .orElseGet(() -> companyRepository.save(Company.builder()
+                        .name(emailDomain)
+                        .emailDomain(emailDomain)
+                        .active(true)
+                        .build()));
+
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phoneNumber(request.getPhoneNumber())
+                .driverLicense(request.getDriverLicense())
+                .role(Role.DRIVER)
+                .company(company)
+                .build();
+
+        user = userRepository.save(user);
+
+        Wallet wallet = Wallet.builder()
+                .user(user)
+                .balance(BigDecimal.ZERO)
+                .build();
+        walletRepository.save(wallet);
+
+        Vehicle vehicle = Vehicle.builder()
+                .owner(user)
+                .model(request.getVehicleModel())
+                .registrationNumber(request.getVehicleRegistration())
+                .seatingCapacity(request.getSeatingCapacity())
+                .insuranceDocument(request.getInsuranceDocument())
+                .registrationDocument(request.getRegistrationDocument())
+                .pollutionDocument(request.getPollutionDocument())
+                .build();
+        vehicleRepository.save(vehicle);
+
+        return ResponseEntity.ok(mapUserToDto(user));
+    }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userRepository.deleteById(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<Map<String, Long>> getDashboardStats() {
+        long totalUsers = userRepository.count();
+        long totalDrivers = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == Role.DRIVER)
+                .count();
+        long totalVehicles = vehicleRepository.count();
+        long totalTrips = tripRepository.count();
+
+        Map<String, Long> stats = Map.of(
+                "totalUsers", totalUsers,
+                "totalDrivers", totalDrivers,
+                "totalVehicles", totalVehicles,
+                "totalTrips", totalTrips
+        );
+
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        // Fetch all users and map to DTOs without wallet/balance info
+        List<UserDTO> users = userRepository.findAll().stream()
+                .map(this::mapUserToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/vehicles")
+    public ResponseEntity<List<VehicleDTO>> getAllVehicles() {
+        List<VehicleDTO> vehicles = vehicleRepository.findAll().stream()
+                .map(this::mapVehicleToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(vehicles);
+    }
+
+    @PutMapping("/users/{userId}/role")
+    public ResponseEntity<UserDTO> updateUserRole(
+            @PathVariable Long userId,
+            @RequestParam Role role
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setRole(role);
+        userRepository.save(user);
+        return ResponseEntity.ok(mapUserToDto(user));
+    }
+
+    private UserDTO mapUserToDto(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .companyName(user.getCompany() != null ? user.getCompany().getName() : null)
+                .build();
+    }
+
+    private VehicleDTO mapVehicleToDto(Vehicle vehicle) {
+        return VehicleDTO.builder()
+                .id(vehicle.getId())
+                .model(vehicle.getModel())
+                .registrationNumber(vehicle.getRegistrationNumber())
+                .seatingCapacity(vehicle.getSeatingCapacity())
+                .build();
+    }
+}

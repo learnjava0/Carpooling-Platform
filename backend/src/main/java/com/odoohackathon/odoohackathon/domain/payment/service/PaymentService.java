@@ -13,15 +13,28 @@ import com.odoohackathon.odoohackathon.domain.trip.repository.TripRepository;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
 import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import org.json.JSONObject;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
+    @Value("${razorpay.key.id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
 
     private final WalletRepository walletRepository;
     private final PaymentTransactionRepository transactionRepository;
@@ -38,6 +51,7 @@ public class PaymentService {
 
     @Transactional
     public WalletDTO rechargeWallet(String userEmail, PaymentRequest request) {
+        // Keeping original wallet logic for non-Razorpay recharges if any
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Wallet wallet = walletRepository.findByUserId(user.getId())
@@ -56,6 +70,36 @@ public class PaymentService {
         transactionRepository.save(transaction);
 
         return mapToDto(wallet);
+    }
+
+    public String createRazorpayOrder(BigDecimal amount) {
+        try {
+            RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+            
+            JSONObject orderRequest = new JSONObject();
+            // Razorpay expects amount in paise (multiply by 100)
+            orderRequest.put("amount", amount.multiply(new BigDecimal("100")).intValue());
+            orderRequest.put("currency", "INR");
+            orderRequest.put("receipt", "txn_" + System.currentTimeMillis());
+
+            Order order = razorpay.orders.create(orderRequest);
+            return order.get("id");
+        } catch (RazorpayException e) {
+            throw new RuntimeException("Error creating Razorpay order", e);
+        }
+    }
+
+    public boolean verifyRazorpayPayment(String orderId, String paymentId, String signature) {
+        try {
+            JSONObject options = new JSONObject();
+            options.put("razorpay_order_id", orderId);
+            options.put("razorpay_payment_id", paymentId);
+            options.put("razorpay_signature", signature);
+
+            return com.razorpay.Utils.verifyPaymentSignature(options, razorpayKeySecret);
+        } catch (RazorpayException e) {
+            return false;
+        }
     }
 
     @Transactional
