@@ -65,6 +65,17 @@ function Register() {
   return (
     <AuthLayout eyebrow="Create Account" title="Sign Up">
       <form className="auth-form register-form" onSubmit={handleSubmit(onSubmit)}>
+        <button className="google-button" type="button">
+          <span aria-hidden="true">G</span>
+          Sign up with Google
+        </button>
+
+        <div className="divider">
+          <span />
+          <small>Or create with email</small>
+          <span />
+        </div>
+
         <label className="avatar-upload">
           <input accept="image/*" type="file" {...register('profileImage')} />
           <span className="avatar-preview">

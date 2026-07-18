@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import Landing from './pages/Landing';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Splash from './pages/auth/Splash';
@@ -12,7 +13,8 @@ import AvailableRides from './pages/ride/AvailableRides';
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Splash />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/splash" element={<Splash />} />
       <Route
         path="/login"
         element={

@@ -45,6 +45,17 @@ function Login() {
   return (
     <AuthLayout eyebrow="Login To Continue" title="Login">
       <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
+        <button className="google-button" type="button">
+          <span aria-hidden="true">G</span>
+          Continue with Google
+        </button>
+
+        <div className="divider">
+          <span />
+          <small>Or continue with email</small>
+          <span />
+        </div>
+
         <InputField
           autoComplete="email"
           error={errors.email}
@@ -72,12 +83,6 @@ function Login() {
         <PrimaryButton isLoading={isSubmitting} type="submit">
           Login
         </PrimaryButton>
-
-        <div className="divider">
-          <span />
-          <small>Or</small>
-          <span />
-        </div>
 
         <div className="auth-switch">
           <span>Create New Account</span>
