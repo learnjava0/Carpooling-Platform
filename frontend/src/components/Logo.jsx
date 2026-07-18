@@ -3,13 +3,13 @@ import { CarFront } from 'lucide-react';
 function Logo({ compact = false }) {
   return (
     <div className="brand-logo" aria-label="Carpooling">
-      <span className="brand-mark">
-        <CarFront size={compact ? 18 : 24} aria-hidden="true" />
-      </span>
-      <span>
+      <div className="brand-mark">
+        <CarFront size={compact ? 16 : 18} aria-hidden="true" />
+      </div>
+      <div>
         <strong>Carpooling</strong>
         {!compact && <small>Ride Together · Save Together</small>}
-      </span>
+      </div>
     </div>
   );
 }

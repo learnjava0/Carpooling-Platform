@@ -7,7 +7,11 @@ function ProtectedRoute({ children }) {
   const location = useLocation();
 
   if (isBootstrapping) {
-    return <Loader label="Checking your session" />;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <Loader label="Checking session..." />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

@@ -1,49 +1,25 @@
-import { ArrowLeft, CircleUserRound, Route, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import Logo from '../components/Logo';
+// AuthLayout is now handled inline in Login/Register pages.
+// This stub exists to avoid breaking any lingering imports.
+import { CarFront } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 function AuthLayout({ children, eyebrow, title }) {
-  const isRegister = title.toLowerCase().includes('sign');
-
   return (
     <main className="auth-page">
-      <section className="auth-shell" aria-labelledby="auth-title">
-        <header className="auth-topbar">
-          <Logo compact />
-          <div className="topbar-actions">
-            <ThemeToggle />
+      <div className="auth-shell">
+        <div className="auth-logo-row">
+          <div className="brand-logo">
+            <div className="brand-mark"><CarFront size={18} /></div>
+            <div><strong>Carpooling</strong></div>
           </div>
-        </header>
-
-        <div className={`auth-frame ${isRegister ? 'auth-frame-register' : ''}`}>
-          <section className="auth-content" style={{ padding: '64px 48px' }}>
-            <h1 id="auth-title" style={{ fontSize: '2.5rem', marginBottom: '8px', letterSpacing: '-1px' }}>{title}</h1>
-            {children}
-          </section>
-          
-          {/* Abstract Art Side */}
-          <aside className="auth-art" aria-label="Carpooling onboarding illustration">
-            <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
-              <div style={{ 
-                width: '100px', height: '100px', 
-                background: 'var(--panel-solid)', 
-                borderRadius: '50%', 
-                margin: '0 auto 24px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: 'var(--shadow)'
-              }}>
-                <Route size={40} color="var(--brand)" />
-              </div>
-              <h2 style={{ fontSize: '1.8rem', color: 'var(--text)' }}>
-                {isRegister
-                  ? 'Start commuting smarter.'
-                  : 'Welcome to the future of commute.'}
-              </h2>
-            </div>
-          </aside>
+          <ThemeToggle />
         </div>
-      </section>
+        <div className="auth-card">
+          {eyebrow && <p style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{eyebrow}</p>}
+          {title && <h1 className="auth-title">{title}</h1>}
+          {children}
+        </div>
+      </div>
     </main>
   );
 }

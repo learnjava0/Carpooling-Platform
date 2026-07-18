@@ -1,72 +1,44 @@
-import DashboardLayout from '../../layouts/DashboardLayout';
-import { Car, Plus, ShieldCheck, CreditCard, Settings } from 'lucide-react';
+import { Plus, ShieldCheck, Settings, FileText, Car } from 'lucide-react';
+import AppShell from '../../layouts/AppShell';
 
-function MyVehicles() {
-  const vehicles = [
-    {
-      id: 1,
-      name: 'Honda City',
-      registration: 'MH12 AB 1234',
-      type: 'Sedan',
-      seats: 4,
-      fuel: 'Petrol',
-      status: 'Verified',
-      image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=400'
-    }
-  ];
+const vehicles = [
+  { id: 1, name: 'Swift Dzire', registration: 'GJ01AB1234', type: 'Sedan', seats: 4, fuel: 'Petrol', status: 'Verified', image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=600' },
+  { id: 2, name: 'Alto 800', registration: 'GJ01AB5678', type: 'Hatchback', seats: 4, fuel: 'Petrol', status: 'Driver', image: null },
+];
 
+export default function MyVehicles() {
   return (
-    <DashboardLayout title="My Vehicles">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <button className="primary-button" style={{ width: 'auto', minHeight: '40px', padding: '0 20px', borderRadius: '8px' }}>
-          <Plus size={18} /> Add New Vehicle
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
+    <AppShell title="My Vehicles"
+      rightActions={
+        <button className="btn btn-primary btn-sm"><Plus size={14} /> Add Vehicle</button>
+      }
+    >
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
         {vehicles.map(v => (
-          <div key={v.id} className="erp-card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ height: '180px', background: `url(${v.image}) center/cover` }}></div>
-            <div style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 4px', fontSize: '1.25rem' }}>{v.name}</h3>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.05em' }}>{v.registration}</span>
-                </div>
-                <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <ShieldCheck size={14} /> {v.status}
-                </span>
+          <div key={v.id} className="vehicle-card">
+            {v.image
+              ? <img src={v.image} alt={v.name} className="vehicle-img" />
+              : <div className="vehicle-img-placeholder"><Car size={44} style={{ opacity: 0.25 }} /></div>
+            }
+            <div className="vehicle-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="vehicle-name">{v.name}</div>
+                <span className="badge badge-green"><ShieldCheck size={11} /> {v.status}</span>
               </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-                <div>
-                  <p style={{ margin: '0 0 4px', color: 'var(--muted)', fontSize: '0.8rem' }}>Type</p>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{v.type}</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 4px', color: 'var(--muted)', fontSize: '0.8rem' }}>Seats</p>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{v.seats} Available</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 4px', color: 'var(--muted)', fontSize: '0.8rem' }}>Fuel</p>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{v.fuel}</p>
-                </div>
+              <div className="vehicle-reg">{v.registration}</div>
+              <div className="vehicle-specs">
+                <div className="spec-item"><div className="spec-value">{v.type}</div><div className="spec-key">Type</div></div>
+                <div className="spec-item"><div className="spec-value">{v.seats}</div><div className="spec-key">Seats</div></div>
+                <div className="spec-item"><div className="spec-value">{v.fuel}</div><div className="spec-key">Fuel</div></div>
               </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button className="secondary-button" style={{ flex: 1, padding: '8px 0', minHeight: '36px', fontSize: '0.9rem' }}>
-                  <CreditCard size={16} /> View Docs
-                </button>
-                <button className="secondary-button" style={{ flex: 1, padding: '8px 0', minHeight: '36px', fontSize: '0.9rem' }}>
-                  <Settings size={16} /> Manage
-                </button>
+              <div className="vehicle-actions">
+                <button className="secondary-button btn-sm"><FileText size={13} /> View Docs</button>
+                <button className="secondary-button btn-sm"><Settings size={13} /> Manage</button>
               </div>
             </div>
           </div>
         ))}
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }
-
-export default MyVehicles;

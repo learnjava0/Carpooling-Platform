@@ -1,27 +1,33 @@
-import { Eye, EyeOff, LockKeyhole } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useState } from 'react';
-import InputField from './InputField';
 
-function PasswordInput({ label = 'Password', ...props }) {
-  const [isVisible, setIsVisible] = useState(false);
+function PasswordInput({ label, error, registration, ...props }) {
+  const [show, setShow] = useState(false);
 
   return (
-    <div className="password-wrap">
-      <InputField
-        icon={LockKeyhole}
-        label={label}
-        type={isVisible ? 'text' : 'password'}
-        {...props}
-      />
-      <button
-        aria-label={isVisible ? 'Hide password' : 'Show password'}
-        className="password-toggle"
-        type="button"
-        onClick={() => setIsVisible((current) => !current)}
-      >
-        {isVisible ? <EyeOff size={17} /> : <Eye size={17} />}
-      </button>
-    </div>
+    <label className="field">
+      {label && <span className="field-label">{label}</span>}
+      <div className={`input-shell ${error ? 'input-error' : ''}`} style={{ position: 'relative' }}>
+        <Lock size={17} aria-hidden="true" style={{ flexShrink: 0 }} />
+        <input
+          type={show ? 'text' : 'password'}
+          aria-invalid={Boolean(error)}
+          style={{ paddingRight: 36 }}
+          {...registration}
+          {...props}
+        />
+        <button
+          type="button"
+          className="password-toggle"
+          aria-label={show ? 'Hide password' : 'Show password'}
+          onClick={() => setShow(s => !s)}
+          style={{ position: 'static', marginLeft: 'auto', flexShrink: 0 }}
+        >
+          {show ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      </div>
+      {error && <small className="error-text">{error.message}</small>}
+    </label>
   );
 }
 

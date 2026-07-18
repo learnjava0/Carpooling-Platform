@@ -1,9 +1,9 @@
 function Loader({ label = 'Loading' }) {
   return (
-    <div className="loader-wrap" role="status" aria-live="polite">
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       <span className="loader" aria-hidden="true" />
       <span>{label}</span>
-    </div>
+    </span>
   );
 }
 

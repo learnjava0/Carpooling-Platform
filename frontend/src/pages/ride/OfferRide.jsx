@@ -1,167 +1,154 @@
 import { useState } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
-import { MapPin, Calendar, Clock, Car, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, Car, ChevronRight, CheckCircle2, ArrowLeftRight } from 'lucide-react';
+import AppShell from '../../layouts/AppShell';
 
-function OfferRide() {
+export default function OfferRide() {
   const [step, setStep] = useState(1);
+  const [form, setForm] = useState({ from: '', to: '', date: '', time: '', vehicle: 'Swift Dzire (GJ01AB1234)', seats: 3, price: 50 });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   return (
-    <DashboardLayout title="Offer a Ride">
-      <div className="erp-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        
+    <AppShell title="Offer a Ride">
+      <div style={{ maxWidth: 860, margin: '0 auto' }}>
         {/* Stepper */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '20px', left: '0', right: '0', height: '2px', background: 'var(--line)', zIndex: 0 }}></div>
-          
-          {[1, 2, 3].map(item => (
-            <div key={item} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-              <div style={{ 
-                width: '40px', height: '40px', borderRadius: '50%', 
-                background: step >= item ? 'var(--brand)' : 'var(--panel-solid)',
-                border: `2px solid ${step >= item ? 'var(--brand)' : 'var(--line-strong)'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: step >= item ? 'var(--brand-dark)' : 'var(--muted)',
-                fontWeight: 'bold', transition: 'all 0.3s'
-              }}>
-                {step > item ? <CheckCircle2 size={20} /> : item}
+        <div className="stepper" style={{ marginBottom: 28 }}>
+          {['Route', 'Details', 'Review & Publish'].map((label, i) => {
+            const n = i + 1;
+            const cls = step > n ? 'done' : step === n ? 'active' : '';
+            return (
+              <div key={label} className={`step-item ${cls}`}>
+                <div className="step-circle">{step > n ? <CheckCircle2 size={15} /> : n}</div>
+                <span className="step-label">{label}</span>
               </div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: step >= item ? 'var(--text)' : 'var(--muted)' }}>
-                {item === 1 ? 'Route' : item === 2 ? 'Details' : 'Confirm'}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Step Content */}
         {step === 1 && (
-          <div>
-            <h2 style={{ marginBottom: '24px', fontSize: '1.25rem' }}>Where are you traveling to?</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Pickup Location</label>
-                <div className="input-shell">
-                  <MapPin size={18} />
-                  <input type="text" placeholder="e.g. Green Valley Apartments" />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
+            <div className="card">
+              <p className="section-label">Where are you going?</p>
+              <div className="stack">
+                <div>
+                  <div className="field-label" style={{ marginBottom: 6 }}>Start Location</div>
+                  <div className="input-shell">
+                    <MapPin size={16} />
+                    <input value={form.from} onChange={e => set('from', e.target.value)} placeholder="e.g. Satellite, Ahmedabad" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <button type="button" className="swap-btn" onClick={() => setForm(f => ({ ...f, from: f.to, to: f.from }))}>
+                    <ArrowLeftRight size={14} />
+                  </button>
+                </div>
+                <div>
+                  <div className="field-label" style={{ marginBottom: 6 }}>Destination</div>
+                  <div className="input-shell">
+                    <MapPin size={16} />
+                    <input value={form.to} onChange={e => set('to', e.target.value)} placeholder="e.g. Office Campus, SG Road" />
+                  </div>
                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Destination</label>
-                <div className="input-shell">
-                  <MapPin size={18} />
-                  <input type="text" placeholder="e.g. Office Block A" defaultValue="Office Block A" />
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
-              <button className="primary-button" onClick={() => setStep(2)} style={{ width: 'auto' }}>
-                Continue <ChevronRight size={18} />
+              <button className="btn btn-primary btn-full" style={{ marginTop: 24 }} onClick={() => setStep(2)}>
+                Continue <ChevronRight size={16} />
               </button>
+            </div>
+
+            <div className="card">
+              <p className="section-label">Route Preview</p>
+              <div className="map-placeholder" style={{ height: 200 }}>
+                <div className="map-route-line" />
+                <MapPin size={28} style={{ opacity: 0.3 }} />
+                <span style={{ fontSize: '0.78rem' }}>Enter locations to preview</span>
+              </div>
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div>
-            <h2 style={{ marginBottom: '24px', fontSize: '1.25rem' }}>Trip Details</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="card">
+            <p className="section-label">Trip Details</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Date</label>
-                <div className="input-shell">
-                  <Calendar size={18} />
-                  <input type="date" />
-                </div>
+                <div className="field-label" style={{ marginBottom: 6 }}>Date</div>
+                <div className="input-shell"><Calendar size={16} /><input type="date" value={form.date} onChange={e => set('date', e.target.value)} /></div>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Time</label>
-                <div className="input-shell">
-                  <Clock size={18} />
-                  <input type="time" />
-                </div>
+                <div className="field-label" style={{ marginBottom: 6 }}>Time</div>
+                <div className="input-shell"><Clock size={16} /><input type="time" value={form.time} onChange={e => set('time', e.target.value)} /></div>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Vehicle</label>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <div className="field-label" style={{ marginBottom: 6 }}>Vehicle</div>
                 <div className="input-shell">
-                  <Car size={18} />
-                  <select style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', color: 'var(--text)' }}>
-                    <option>Honda City (MH12 AB 1234)</option>
+                  <Car size={16} />
+                  <select value={form.vehicle} onChange={e => set('vehicle', e.target.value)}>
+                    <option>Swift Dzire (GJ01AB1234)</option>
+                    <option>Alto 800 (GJ01AB5678)</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Available Seats</label>
-                <div className="input-shell">
-                  <input type="number" min="1" max="4" defaultValue="3" />
-                </div>
+                <div className="field-label" style={{ marginBottom: 6 }}>Available Seats</div>
+                <div className="input-shell"><input type="number" min="1" max="4" value={form.seats} onChange={e => set('seats', +e.target.value)} /></div>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Price per seat</label>
+                <div className="field-label" style={{ marginBottom: 6 }}>Price per Seat (₹)</div>
                 <div className="input-shell">
-                  <span style={{ fontWeight: 600 }}>₹</span>
-                  <input type="number" min="0" defaultValue="50" />
+                  <span style={{ fontWeight: 700, color: 'var(--brand)' }}>₹</span>
+                  <input type="number" min="0" value={form.price} onChange={e => set('price', +e.target.value)} />
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
-              <button className="secondary-button" onClick={() => setStep(1)}>Back</button>
-              <button className="primary-button" onClick={() => setStep(3)} style={{ width: 'auto' }}>
-                Review <ChevronRight size={18} />
-              </button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn btn-primary" onClick={() => setStep(3)} style={{ flex: 1 }}>Review <ChevronRight size={16} /></button>
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div>
-            <h2 style={{ marginBottom: '24px', fontSize: '1.25rem' }}>Review & Publish</h2>
-            
-            <div style={{ background: 'rgba(34, 160, 107, 0.05)', borderRadius: '16px', padding: '24px', marginBottom: '24px', border: '1px solid rgba(34, 160, 107, 0.2)' }}>
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-                <MapPin color="var(--accent)" />
-                <div>
-                  <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: 'var(--muted)' }}>Pickup</p>
-                  <p style={{ margin: 0, fontWeight: 600 }}>Green Valley Apartments</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+            <div className="card">
+              <p className="section-label">Route Summary</p>
+              <div className="route-visual" style={{ marginBottom: 20 }}>
+                <div className="route-dots">
+                  <div className="dot-from" />
+                  <div className="dot-line" style={{ minHeight: 36 }} />
+                  <div className="dot-to" />
+                </div>
+                <div className="route-labels">
+                  <div><div className="route-label-sub">From</div><div className="route-label-from">{form.from || '—'}</div></div>
+                  <div><div className="route-label-sub">To</div><div className="route-label-to">{form.to || '—'}</div></div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <MapPin color="var(--brand)" />
-                <div>
-                  <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: 'var(--muted)' }}>Drop-off</p>
-                  <p style={{ margin: 0, fontWeight: 600 }}>Office Block A</p>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[{ k: 'Date', v: form.date || '—' }, { k: 'Time', v: form.time || '—' }, { k: 'Seats', v: form.seats }, { k: 'Price/Seat', v: `₹${form.price}` }].map(({ k, v }) => (
+                  <div key={k} style={{ background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{k}</div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem' }}>{v}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
-              <div style={{ pading: '16px', background: 'var(--bg-soft)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 8px', color: 'var(--muted)', fontSize: '0.8rem' }}>Date</p>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem' }}>Today</p>
+            <div className="card">
+              <p className="section-label">Publish Details</p>
+              <div style={{ padding: '12px 14px', background: 'var(--accent-dim)', borderRadius: 10, marginBottom: 16, fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}>
+                ✓ ₹{form.price} / seat · {form.seats} seats available
               </div>
-              <div style={{ pading: '16px', background: 'var(--bg-soft)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 8px', color: 'var(--muted)', fontSize: '0.8rem' }}>Time</p>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem' }}>09:00 AM</p>
+              <p style={{ fontSize: '0.83rem', color: 'var(--text-2)', lineHeight: 1.65, marginBottom: 20 }}>
+                Your ride will be visible to colleagues on the same route. They can book available seats directly.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button className="btn btn-primary btn-full btn-lg" onClick={() => { alert('Ride published!'); }}>
+                  Publish Ride
+                </button>
+                <button className="btn btn-ghost btn-full" onClick={() => setStep(2)}>← Edit Details</button>
               </div>
-              <div style={{ pading: '16px', background: 'var(--bg-soft)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 8px', color: 'var(--muted)', fontSize: '0.8rem' }}>Seats</p>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem' }}>3</p>
-              </div>
-              <div style={{ pading: '16px', background: 'var(--bg-soft)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 8px', color: 'var(--muted)', fontSize: '0.8rem' }}>Price/Seat</p>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--accent)' }}>₹50</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <button className="secondary-button" onClick={() => setStep(2)}>Back</button>
-              <button className="primary-button" style={{ width: 'auto', background: 'var(--brand)', color: 'var(--brand-dark)' }}>
-                Publish Ride
-              </button>
             </div>
           </div>
         )}
-
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }
-
-export default OfferRide;

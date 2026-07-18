@@ -1,79 +1,80 @@
-import { ArrowLeft, Map as MapIcon, Navigation } from 'lucide-react';
+import { MapPin, Navigation, Clock, Users } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PrimaryButton from '../../components/PrimaryButton';
-import DashboardLayout from '../../layouts/DashboardLayout';
+import AppShell from '../../layouts/AppShell';
 
-function RouteConfirmation() {
+export default function RouteConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const rideDetails = location.state?.rideDetails || {
-    pickupLocation: 'Unknown',
-    destination: 'Unknown'
-  };
-
-  const handleConfirm = () => {
-    navigate('/available-rides', { state: { rideDetails } });
-  };
+  const rd = location.state?.rideDetails || { pickupLocation: 'Unknown', destination: 'Unknown' };
 
   return (
-    <DashboardLayout title="Find a Ride">
-      <div className="erp-card" style={{ maxWidth: '800px', margin: '0 auto', background: 'var(--panel-solid)' }}>
-        <button 
-          type="button" 
-          className="link-button" 
-          style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--muted)' }}
-          onClick={() => navigate('/find-ride')}
-        >
-          <ArrowLeft size={16} /> Back to Search
-        </button>
-
-        <p className="eyebrow" style={{ color: 'var(--accent)' }}>Review Travel Path</p>
-        <h1 style={{ fontSize: '2rem', marginBottom: '32px' }}>Route Confirmation</h1>
-
-        <div style={{ background: 'var(--bg-soft)', border: '1px solid var(--line)', borderRadius: '16px', overflow: 'hidden', marginBottom: '24px' }}>
-          {/* Map Placeholder */}
-          <div style={{ height: '320px', background: 'rgba(37, 99, 235, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: 'var(--muted)' }}>
-              <MapIcon size={56} style={{ marginBottom: '16px', opacity: 0.8, color: '#2563eb' }} />
-              <span style={{ fontWeight: 600 }}>Interactive Map Rendering Route</span>
-              <small style={{ marginTop: '8px' }}>Google Maps Integration (Mocked)</small>
-          </div>
-          
-          <div style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                <div style={{ background: '#dbeafe', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
-                  <div style={{ width: '12px', height: '12px', background: '#2563eb', borderRadius: '50%' }} />
-                </div>
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '0.85rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pickup Location</h3>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: '1.1rem', color: 'var(--text)' }}>{rideDetails.pickupLocation}</p>
-                </div>
-              </div>
-
-              <div style={{ marginLeft: '15px', borderLeft: '2px dashed var(--line-strong)', height: '24px', opacity: 0.5 }}></div>
-
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                <div style={{ background: '#fce7f3', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
-                  <Navigation size={16} color="#db2777" />
-                </div>
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '0.85rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destination</h3>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: '1.1rem', color: 'var(--text)' }}>{rideDetails.destination}</p>
-                </div>
-              </div>
+    <AppShell title="Route Confirmation" showBack>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        {/* Map */}
+        <div>
+          <div className="card" style={{ marginBottom: 16 }}>
+            <p className="section-label">Map Preview</p>
+            <div className="map-placeholder" style={{ height: 320 }}>
+              <div className="map-route-line" />
+              <MapPin size={36} color="var(--brand)" style={{ opacity: 0.6 }} />
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-2)' }}>Route visualization</span>
+              <small style={{ color: 'var(--text-3)' }}>Maps integration placeholder</small>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
-          <PrimaryButton onClick={handleConfirm} style={{ width: 'auto', padding: '0 32px' }}>
-            Find Available Rides
+        {/* Route details + confirm */}
+        <div>
+          <div className="card" style={{ marginBottom: 16 }}>
+            <p className="section-label">Your Route</p>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 20 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 4 }}>
+                <div className="dot-from" />
+                <div className="dot-line" style={{ minHeight: 40 }} />
+                <div className="dot-to" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: 1 }}>
+                <div>
+                  <div className="route-label-sub">Pickup</div>
+                  <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', marginTop: 3 }}>{rd.pickupLocation}</div>
+                </div>
+                <div>
+                  <div className="route-label-sub">Drop-off</div>
+                  <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', marginTop: 3 }}>{rd.destination}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {rd.travelDate && <span className="badge badge-muted">📅 {rd.travelDate}</span>}
+              {rd.travelTime && <span className="badge badge-muted">🕐 {rd.travelTime}</span>}
+              {rd.numberOfSeats && <span className="badge badge-muted">💺 {rd.numberOfSeats} seat{rd.numberOfSeats > 1 ? 's' : ''}</span>}
+            </div>
+          </div>
+
+          <div className="card" style={{ marginBottom: 16, background: 'var(--accent-dim)', borderColor: 'rgba(74,222,128,0.2)' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}>
+              ✓ Route calculated. Ready to find matching rides.
+            </p>
+          </div>
+
+          <PrimaryButton
+            onClick={() => navigate('/available-rides', { state: { rideDetails: rd } })}
+            style={{ width: '100%', minHeight: 46 }}
+          >
+            Find Available Rides →
           </PrimaryButton>
+
+          <button
+            className="btn btn-ghost btn-full"
+            style={{ marginTop: 10, width: '100%' }}
+            onClick={() => navigate('/find-ride')}
+          >
+            ← Edit Route
+          </button>
         </div>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }
-
-export default RouteConfirmation;

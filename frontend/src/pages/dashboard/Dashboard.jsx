@@ -1,102 +1,114 @@
-import { Search, PlusCircle, Clock, MapPin, Users, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../../layouts/DashboardLayout';
+import { Search, PlusCircle, Clock, MapPin, Users, Leaf, IndianRupee, TrendingUp } from 'lucide-react';
+import AppShell from '../../layouts/AppShell';
 import { useAuth } from '../../hooks/useAuth';
 
-function Dashboard() {
+const recentRides = [
+  { id: 1, driver: 'Raj Patel', vehicle: 'Swift Dzire', rating: 4.8, from: 'ISKCON', to: 'Infinity', time: '01:00 PM', fare: 120, seats: 2, status: 'completed' },
+  { id: 2, driver: 'Krishna Singh', vehicle: 'Alto 800', rating: 4.6, from: 'ISKCON', to: 'Abbey', time: '04:00 AM', fare: 120, seats: 2, status: 'completed' },
+];
+
+export default function Dashboard() {
   const { user } = useAuth();
-  const userName = user?.firstName ? user.firstName : 'there';
+  const name = user?.firstName || 'there';
 
   return (
-    <DashboardLayout title="Overview Overview">
-      <div className="erp-card hero-section" style={{ background: 'linear-gradient(135deg, var(--brand), #ffd86f)', color: 'var(--brand-dark)' }}>
-        <p style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px', opacity: 0.8 }}>Your Daily Commute</p>
-        <h1 style={{ margin: '0 0 12px', fontSize: '2rem' }}>Welcome back, {userName}! 👋</h1>
-        <p style={{ margin: 0, maxWidth: '600px', opacity: 0.9 }}>
-          Share rides with your colleagues, reduce carbon footprint, and save money. Choose an option below to get started.
-        </p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-        <div className="erp-card" style={{ marginBottom: 0, background: 'rgba(37, 99, 235, 0.05)', borderColor: 'rgba(37, 99, 235, 0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ background: 'rgba(37, 99, 235, 0.15)', padding: '16px', borderRadius: '50%' }}>
-              <Search size={28} color="#2563eb" />
-            </div>
-          </div>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Find a Ride</h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '24px', fontSize: '0.9rem' }}>Search for available rides travelling along your route today.</p>
-          <Link to="/find-ride" className="primary-button" style={{ textDecoration: 'none', background: '#2563eb', color: '#fff', boxShadow: '0 8px 24px rgba(37, 99, 235, 0.25)' }}>
-            Search Rides
-          </Link>
+    <AppShell title="Overview">
+      {/* Welcome banner */}
+      <div className="welcome-banner">
+        <div className="welcome-text">
+          <h2>Welcome back, {name} 👋</h2>
+          <p>Share rides with your colleagues, reduce your carbon footprint, and save money on every commute.</p>
         </div>
-
-        <div className="erp-card" style={{ marginBottom: 0, background: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ background: 'rgba(16, 185, 129, 0.15)', padding: '16px', borderRadius: '50%' }}>
-              <PlusCircle size={28} color="#10b981" />
-            </div>
-          </div>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Offer a Ride</h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '24px', fontSize: '0.9rem' }}>Publish your travel route and share available seats with others.</p>
-          <Link to="/offer-ride" className="primary-button" style={{ textDecoration: 'none', background: '#10b981', color: '#fff', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }}>
-            Offer a Ride
+        <div className="welcome-actions">
+          <Link to="/find-ride" className="btn btn-primary btn-lg">
+            <Search size={17} /> Find a Ride
+          </Link>
+          <Link to="/offer-ride" className="btn btn-ghost btn-lg">
+            <PlusCircle size={17} /> Offer a Ride
           </Link>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '24px' }}>
-        <div className="erp-card">
-          <div className="erp-card-header">
-            <h3 className="erp-card-title">Recent Activity</h3>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '12px', background: 'rgba(45, 38, 24, 0.03)', borderRadius: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MapPin size={20} color="#166534" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: '0 0 4px', fontWeight: 600 }}>Completed trip to Office</p>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>Yesterday, 09:30 AM</p>
-              </div>
-              <span className="badge badge-success">Completed</span>
-            </div>
-            
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '12px', background: 'rgba(45, 38, 24, 0.03)', borderRadius: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Users size={20} color="#1e40af" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: '0 0 4px', fontWeight: 600 }}>Accepted ride request</p>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>2 days ago</p>
-              </div>
-              <span className="badge badge-info">System</span>
-            </div>
-          </div>
+      {/* Stats row */}
+      <div className="grid-4" style={{ marginBottom: 28 }}>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--blue-dim)' }}><TrendingUp size={20} color="var(--blue)" /></div>
+          <div><div className="stat-value">12</div><div className="stat-label">Total Trips</div></div>
         </div>
-
-        <div className="erp-card">
-          <div className="erp-card-header">
-            <h3 className="erp-card-title">Stats</h3>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <p style={{ color: 'var(--muted)', margin: '0 0 4px', fontSize: '0.85rem' }}>CO₂ Saved</p>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>45.2 kg</p>
-            </div>
-            <div>
-              <p style={{ color: 'var(--muted)', margin: '0 0 4px', fontSize: '0.85rem' }}>Trips Shared</p>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>12</p>
-            </div>
-            <div>
-              <p style={{ color: 'var(--muted)', margin: '0 0 4px', fontSize: '0.85rem' }}>Wallet Balance</p>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'var(--accent)' }}>₹850.00</p>
-            </div>
-          </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--accent-dim)' }}><Leaf size={20} color="var(--accent)" /></div>
+          <div><div className="stat-value" style={{ color: 'var(--accent)' }}>45 kg</div><div className="stat-label">CO₂ Saved</div></div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--brand-dim)' }}><IndianRupee size={20} color="var(--brand)" /></div>
+          <div><div className="stat-value" style={{ color: 'var(--brand)' }}>₹850</div><div className="stat-label">Wallet Balance</div></div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--purple-dim)' }}><Users size={20} color="var(--purple)" /></div>
+          <div><div className="stat-value">8</div><div className="stat-label">Rides Shared</div></div>
         </div>
       </div>
-    </DashboardLayout>
+
+      {/* Action cards + Recent activity */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28 }}>
+        <Link to="/find-ride" className="action-card">
+          <div className="action-card-icon" style={{ background: 'var(--blue-dim)' }}><Search size={20} color="var(--blue)" /></div>
+          <div className="action-card-title">Find a Ride</div>
+          <div className="action-card-sub">Search available rides along your route today.</div>
+        </Link>
+        <Link to="/offer-ride" className="action-card">
+          <div className="action-card-icon" style={{ background: 'var(--accent-dim)' }}><PlusCircle size={20} color="var(--accent)" /></div>
+          <div className="action-card-title">Offer a Ride</div>
+          <div className="action-card-sub">Publish your route and share seats with colleagues.</div>
+        </Link>
+      </div>
+
+      {/* Recent rides */}
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">Recent Activity</span>
+          <Link to="/trips" className="link-btn">View all trips →</Link>
+        </div>
+
+        {recentRides.map(ride => (
+          <div key={ride.id} className="ride-card" style={{ marginBottom: 12 }}>
+            <div className="ride-card-top">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="user-avatar">{ride.driver[0]}</div>
+                <div>
+                  <div className="driver-info-name">{ride.driver}</div>
+                  <div className="driver-info-sub">★ {ride.rating} · {ride.vehicle}</div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div className="fare-big">₹{ride.fare}</div>
+                <div className="fare-sub">per seat</div>
+              </div>
+            </div>
+
+            <div className="route-visual">
+              <div className="route-dots">
+                <div className="dot-from" />
+                <div className="dot-line" />
+                <div className="dot-to" />
+              </div>
+              <div className="route-labels">
+                <div><div className="route-label-sub">From</div><div className="route-label-from">{ride.from}</div></div>
+                <div><div className="route-label-sub">To</div><div className="route-label-to">{ride.to}</div></div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="ride-meta">
+                <div className="ride-meta-item"><Clock size={13} /> {ride.time}</div>
+                <div className="ride-meta-item"><MapPin size={13} /> {ride.seats} seats</div>
+              </div>
+              <span className="badge badge-muted">{ride.status}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </AppShell>
   );
 }
-
-export default Dashboard;

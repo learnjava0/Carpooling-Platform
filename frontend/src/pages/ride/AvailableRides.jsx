@@ -1,128 +1,105 @@
-import { ArrowLeft, Clock, Users, IndianRupee, MapPin } from 'lucide-react';
+import { Clock, Users, MapPin, RefreshCw } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import PrimaryButton from '../../components/PrimaryButton';
-import DashboardLayout from '../../layouts/DashboardLayout';
+import AppShell from '../../layouts/AppShell';
 
 const mockRides = [
-  {
-    id: 1,
-    driverName: 'Rahul Sharma',
-    vehicle: 'Hyundai i20',
-    rating: 4.8,
-    departureTime: '09:00 AM',
-    availableSeats: 3,
-    fare: 80,
-    route: 'HSR Layout → Manyata Tech Park',
-  },
-  {
-    id: 2,
-    driverName: 'Sneha Patel',
-    vehicle: 'Kia Seltos',
-    rating: 4.9,
-    departureTime: '09:15 AM',
-    availableSeats: 1,
-    fare: 120,
-    route: 'HSR Layout → Manyata Tech Park',
-  },
-  {
-    id: 3,
-    driverName: 'Vikram Singh',
-    vehicle: 'Maruti Dzire',
-    rating: 4.6,
-    departureTime: '09:30 AM',
-    availableSeats: 2,
-    fare: 70,
-    route: 'BTM Layout (via HSR) → Manyata Tech Park',
-  }
+  { id: 1, driver: 'Raj Patel', vehicle: 'Swift Dzire', plate: 'GJ01AB1234', rating: 4.8, time: '01:00 PM', seats: 4, fare: 120, from: 'ISKCON', to: 'Infinity' },
+  { id: 2, driver: 'Krishna Singh', vehicle: 'Alto 800', plate: 'GJ01AB5678', rating: 4.6, time: '05:00 PM', seats: 2, fare: 120, from: 'ISKCON', to: 'Infinity' },
+  { id: 3, driver: 'Sneha Mehta', vehicle: 'Kia Seltos', plate: 'GJ01CD9012', rating: 4.9, time: '09:15 AM', seats: 1, fare: 150, from: 'BTM Layout', to: 'Manyata Tech' },
 ];
 
-function AvailableRides() {
+export default function AvailableRides() {
   const navigate = useNavigate();
   const location = useLocation();
-  
   const rideDetails = location.state?.rideDetails;
 
-  const handleBook = (rideId) => {
-    alert(`Ride ${rideId} booked successfully!`);
-    navigate('/trips');
-  };
-
   return (
-    <DashboardLayout title="Matching Rides">
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <button 
-          type="button" 
-          className="link-button" 
-          style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--muted)' }}
-          onClick={() => navigate('/route-confirmation', { state: { rideDetails } })}
-        >
-          <ArrowLeft size={16} /> Back to Route
-        </button>
+    <AppShell title="Available Rides" showBack
+      rightActions={
+        <button className="btn btn-ghost btn-sm"><RefreshCw size={14} /> Refresh</button>
+      }
+    >
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+        {/* Ride list */}
+        <div>
+          <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', marginBottom: 20 }}>
+            Found <strong style={{ color: 'var(--text)' }}>{mockRides.length} rides</strong> along your route
+          </p>
 
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '2rem', margin: '0 0 8px' }}>Available Rides</h1>
-          <p style={{ color: 'var(--muted)', margin: 0 }}>Found {mockRides.length} rides along your route today.</p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {mockRides.map(ride => (
-            <div key={ride.id} className="erp-card" style={{ margin: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--brand-dark)', fontSize: '1.2rem' }}>
-                    {ride.driverName.charAt(0)}
-                  </div>
+            <div key={ride.id} className="ride-card">
+              <div className="ride-card-top">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className="user-avatar" style={{ width: 44, height: 44, fontSize: '1rem' }}>{ride.driver[0]}</div>
                   <div>
-                    <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', color: 'var(--text)' }}>{ride.driverName}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--muted)', fontSize: '0.9rem' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--brand)', fontWeight: 'bold' }}>★ {ride.rating}</span>
-                      <span>•</span>
-                      <span>{ride.vehicle}</span>
-                    </div>
+                    <div className="driver-info-name">{ride.driver}</div>
+                    <div className="driver-info-sub">★ {ride.rating} · {ride.vehicle} · {ride.plate}</div>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <h3 style={{ margin: '0 0 4px', fontSize: '1.6rem', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', fontWeight: 800 }}>
-                    ₹{ride.fare}
-                  </h3>
-                  <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>per seat</span>
+                  <div className="fare-big">₹{ride.fare}</div>
+                  <div className="fare-sub">per seat</div>
                 </div>
               </div>
 
-              <div style={{ height: '1px', background: 'var(--line)' }}></div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                 <div style={{ display: 'flex', gap: '24px', flex: 1, minWidth: '200px' }}>
-                    <div>
-                      <p style={{ margin: '0 0 6px', color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}><MapPin size={14} /> Route</p>
-                      <p style={{ margin: 0, fontWeight: 600 }}>{ride.route}</p>
-                    </div>
-                 </div>
-                 
-                 <div style={{ display: 'flex', gap: '32px' }}>
-                   <div>
-                      <p style={{ margin: '0 0 6px', color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}><Clock size={14} /> Departure</p>
-                      <p style={{ margin: 0, fontWeight: 600 }}>{ride.departureTime}</p>
-                   </div>
-                   <div>
-                      <p style={{ margin: '0 0 6px', color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}><Users size={14} /> Seats Left</p>
-                      <p style={{ margin: 0, fontWeight: 600 }}>{ride.availableSeats}</p>
-                   </div>
-                 </div>
+              <div className="route-visual">
+                <div className="route-dots">
+                  <div className="dot-from" />
+                  <div className="dot-line" />
+                  <div className="dot-to" />
+                </div>
+                <div className="route-labels">
+                  <div><div className="route-label-sub">From</div><div className="route-label-from">{ride.from}</div></div>
+                  <div><div className="route-label-sub">To</div><div className="route-label-to">{ride.to}</div></div>
+                </div>
               </div>
 
-              <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
-                 <PrimaryButton onClick={() => handleBook(ride.id)} style={{ width: 'auto', padding: '0 32px' }}>
-                    Book Ride
-                 </PrimaryButton>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="ride-meta">
+                  <div className="ride-meta-item"><Clock size={13} /> {ride.time}</div>
+                  <div className="ride-meta-item"><Users size={13} /> {ride.seats} seats left</div>
+                </div>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => { alert(`Ride #${ride.id} booked!`); navigate('/trips'); }}
+                >
+                  Book Now
+                </button>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Sidebar summary */}
+        <div>
+          {rideDetails && (
+            <div className="card" style={{ marginBottom: 16 }}>
+              <p className="section-label">Your Search</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <div className="dot-from" />
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{rideDetails.pickupLocation || '—'}</span>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <div className="dot-to" />
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{rideDetails.destination || '—'}</span>
+                </div>
+                {rideDetails.travelDate && <span className="badge badge-muted">📅 {rideDetails.travelDate}</span>}
+                {rideDetails.travelTime && <span className="badge badge-muted">🕐 {rideDetails.travelTime}</span>}
+              </div>
+              <button className="btn btn-ghost btn-full" style={{ marginTop: 14 }} onClick={() => navigate('/find-ride')}>
+                Edit Search
+              </button>
+            </div>
+          )}
+
+          <div className="card" style={{ background: 'var(--brand-dim)', borderColor: 'rgba(244,176,0,0.2)' }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.65 }}>
+              <strong style={{ color: 'var(--brand)' }}>Book quickly</strong> — seats fill up fast during peak hours. The fare is shared equally among all passengers.
+            </p>
+          </div>
+        </div>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }
-
-export default AvailableRides;

@@ -6,7 +6,11 @@ function PublicRoute({ children }) {
   const { isAuthenticated, isBootstrapping } = useAuth();
 
   if (isBootstrapping) {
-    return <Loader label="Preparing your workspace" />;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <Loader label="Loading..." />
+      </div>
+    );
   }
 
   if (isAuthenticated) {
