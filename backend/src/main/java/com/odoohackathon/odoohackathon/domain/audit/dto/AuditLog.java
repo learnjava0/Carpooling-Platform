@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuditLog {
+    private String eventTime;
     private String eventType;
     private String userEmail;
     private String details;

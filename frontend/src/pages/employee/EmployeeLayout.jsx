@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Search, MapPin, LogOut, Car, History, PlusCircle, CarFront, Settings, UserCircle, ShieldCheck } from 'lucide-react';
+import { Search, MapPin, LogOut, Car, History, PlusCircle, CarFront, Settings, UserCircle, ShieldCheck, BarChart3 } from 'lucide-react';
 
 const EmployeeLayout = () => {
   const { logout, user } = useAuth();
@@ -16,6 +16,7 @@ const EmployeeLayout = () => {
   const navItems = [
     { name: 'Discover Rides', path: '/employee', end: true, icon: Search },
     { name: 'My Trips', path: '/employee/trips', end: false, icon: History },
+    { name: 'Analytics', path: '/employee/analytics', end: false, icon: BarChart3 },
     { name: 'Active Rides', path: '/employee/active-rides', end: false, icon: CarFront },
     { name: 'Publish Ride', path: '/employee/publish', end: false, icon: PlusCircle },
     { name: 'My Vehicles', path: '/employee/vehicles', end: false, icon: Car },

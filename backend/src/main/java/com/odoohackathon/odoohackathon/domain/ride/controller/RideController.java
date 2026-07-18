@@ -1,5 +1,4 @@
 package com.odoohackathon.odoohackathon.domain.ride.controller;
-
 import com.odoohackathon.odoohackathon.domain.ride.dto.RideDTO;
 import com.odoohackathon.odoohackathon.domain.ride.dto.RideRequest;
 import com.odoohackathon.odoohackathon.domain.ride.service.RideService;

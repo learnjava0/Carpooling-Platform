@@ -3,6 +3,7 @@ package com.odoohackathon.odoohackathon.domain.trip.controller;
 import com.odoohackathon.odoohackathon.domain.trip.dto.TripDTO;
 import com.odoohackathon.odoohackathon.domain.trip.dto.TripRequest;
 import com.odoohackathon.odoohackathon.domain.trip.service.TripService;
+import com.odoohackathon.odoohackathon.domain.audit.service.PdfReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import java.util.List;
 public class TripController {
 
     private final TripService tripService;
+    private final PdfReportService pdfReportService;
 
     @PostMapping
     public ResponseEntity<TripDTO> bookTrip(
@@ -31,6 +33,20 @@ public class TripController {
     public ResponseEntity<List<TripDTO>> getMyTrips(Authentication authentication) {
         String userEmail = authentication.getName();
         return ResponseEntity.ok(tripService.getPassengerTrips(userEmail));
+    }
+
+    @GetMapping(value = "/me/pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> getMyTripsPdf(Authentication authentication) {
+        try {
+            String userEmail = authentication.getName();
+            List<TripDTO> trips = tripService.getPassengerTrips(userEmail);
+            byte[] pdfBytes = pdfReportService.generateEmployeePdfReport(userEmail, trips);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=my-trips-report.pdf")
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @PatchMapping("/{tripId}/status")

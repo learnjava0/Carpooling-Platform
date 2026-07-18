@@ -1,6 +1,7 @@
 package com.odoohackathon.odoohackathon.domain.audit.controller;
 
 import com.odoohackathon.odoohackathon.domain.audit.dto.AuditLog;
+import com.odoohackathon.odoohackathon.domain.audit.service.PdfReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,19 @@ public class AdminAuditController {
 
     @Qualifier("clickhouseJdbcTemplate")
     private final JdbcTemplate clickhouseJdbcTemplate;
+    private final PdfReportService pdfReportService;
+
+    @GetMapping(value = "/logs/pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> downloadAuditPdf() {
+        try {
+            byte[] pdfBytes = pdfReportService.generateAuditPdfReport();
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=audit-logs.pdf")
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
 
     @GetMapping("/logs")
     public ResponseEntity<List<AuditLog>> getAuditLogs() {
