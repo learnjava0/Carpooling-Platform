@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
 import AdminLayout from './pages/admin/AdminLayout';
 import DashboardOverview from './pages/admin/DashboardOverview';
@@ -18,6 +19,7 @@ import Settings from './pages/employee/Settings';
 import Wallet from './pages/employee/Wallet';
 import SavedPlaces from './pages/employee/SavedPlaces';
 import Chat from './pages/employee/Chat';
+import AdminDashboard from './pages/employee/AdminDashboard';
 import LiveTracking from './pages/employee/LiveTracking';
 import SplashScreen from './pages/SplashScreen';
 // Placeholders for remaining features
@@ -57,6 +59,7 @@ function App() {
           <Route path="/" element={<SplashScreen />} />
           <Route path="/redirect" element={<RoleBasedRedirect />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
           <Route path="/admin" element={
@@ -79,6 +82,7 @@ function App() {
             <Route path="trips" element={<MyTrips />} />
           <Route path="saved-places" element={<SavedPlaces />} />
           <Route path="chat" element={<Chat />} />
+          <Route path="admin" element={<AdminDashboard />} />
             <Route path="active-rides" element={<ActiveRides />} />
             <Route path="publish" element={<PublishRide />} />
             <Route path="vehicles" element={<MyVehicles />} />

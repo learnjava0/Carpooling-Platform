@@ -59,15 +59,15 @@ public class PaymentController {
             TransactionDTO dummy = new TransactionDTO();
             dummy.setStatus("SUCCESS");
             return ResponseEntity.ok(dummy);
+        } else if ("TRIP_PAYMENT".equalsIgnoreCase(verifyRequest.getPurpose())) {
+            PaymentRequest tripPayReq = new PaymentRequest();
+            tripPayReq.setTripId(verifyRequest.getTripId());
+            tripPayReq.setAmount(verifyRequest.getAmount());
+            tripPayReq.setPaymentMethod("RAZORPAY");
+            return ResponseEntity.ok(paymentService.payForTrip(authentication.getName(), tripPayReq));
         }
 
-        // If valid, process the payment as normal for a TRIP
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setTripId(verifyRequest.getTripId());
-        paymentRequest.setPaymentMethod(verifyRequest.getPaymentMethod());
-        
-        TransactionDTO transaction = paymentService.payForTrip(authentication.getName(), paymentRequest);
-        return ResponseEntity.ok(transaction);
+        throw new IllegalArgumentException("Unknown payment purpose");
     }
 
     @GetMapping("/wallet")

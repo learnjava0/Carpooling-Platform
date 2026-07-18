@@ -8,6 +8,7 @@ import com.odoohackathon.odoohackathon.domain.user.dto.AuthRequest;
 import com.odoohackathon.odoohackathon.domain.user.dto.AuthResponse;
 import com.odoohackathon.odoohackathon.domain.user.dto.RegisterRequest;
 import com.odoohackathon.odoohackathon.domain.user.dto.UserDTO;
+import com.odoohackathon.odoohackathon.domain.audit.service.AuditService;
 import com.odoohackathon.odoohackathon.domain.user.entity.Company;
 import com.odoohackathon.odoohackathon.domain.user.entity.Role;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
@@ -30,6 +31,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final WalletRepository walletRepository;
+    private final AuditService auditService;
     private final com.odoohackathon.odoohackathon.domain.user.repository.PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -90,6 +92,8 @@ public class AuthService {
 
         CustomUserDetails userDetails = new CustomUserDetails(user);
         String jwtToken = jwtService.generateToken(userDetails);
+
+        auditService.logEvent("USER_LOGIN", request.getEmail(), "Successful login", "IP_NOT_CAPTURED");
 
         return AuthResponse.builder()
                 .token(jwtToken)

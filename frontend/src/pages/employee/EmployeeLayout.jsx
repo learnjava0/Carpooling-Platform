@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Search, MapPin, LogOut, Car, History, PlusCircle, CarFront, Settings, UserCircle } from 'lucide-react';
+import { Search, MapPin, LogOut, Car, History, PlusCircle, CarFront, Settings, UserCircle, ShieldCheck } from 'lucide-react';
 
 const EmployeeLayout = () => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -18,6 +19,8 @@ const EmployeeLayout = () => {
     { name: 'Active Rides', path: '/employee/active-rides', end: false, icon: CarFront },
     { name: 'Publish Ride', path: '/employee/publish', end: false, icon: PlusCircle },
     { name: 'My Vehicles', path: '/employee/vehicles', end: false, icon: Car },
+    { name: 'Wallet', path: '/employee/wallet', end: false, icon: UserCircle },
+    ...(user?.role === 'ADMIN' ? [{ name: 'Admin Dashboard', path: '/employee/admin', end: false, icon: ShieldCheck }] : []),
     { name: 'Settings', path: '/employee/settings', end: false, icon: Settings },
   ];
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { Mail, Lock, Car, ArrowRight, AlertCircle } from 'lucide-react';
@@ -141,8 +141,11 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-slate-500">
-            First time logging in? <a href="/reset-password" className="font-semibold text-primary-600 dark:text-primary-400 hover:underline">Set your password</a>
+          <div className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+              Sign up
+            </Link>
           </div>
         </div>
       </div>

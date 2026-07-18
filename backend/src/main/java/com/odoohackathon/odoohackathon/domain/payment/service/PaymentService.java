@@ -12,6 +12,7 @@ import com.odoohackathon.odoohackathon.domain.trip.entity.TripStatus;
 import com.odoohackathon.odoohackathon.domain.trip.repository.TripRepository;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
 import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
+import com.odoohackathon.odoohackathon.domain.audit.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class PaymentService {
     private final PaymentTransactionRepository transactionRepository;
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
     public WalletDTO getMyWallet(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
@@ -68,6 +70,8 @@ public class PaymentService {
                 .status("SUCCESS")
                 .build();
         transactionRepository.save(transaction);
+        
+        auditService.logEvent("WALLET_RECHARGE", userEmail, "Recharged wallet by " + request.getAmount(), "IP_NOT_CAPTURED");
 
         return mapToDto(wallet);
     }
@@ -127,6 +131,15 @@ public class PaymentService {
             }
             passengerWallet.setBalance(passengerWallet.getBalance().subtract(trip.getTotalFare()));
             walletRepository.save(passengerWallet);
+        } else if ("RAZORPAY".equalsIgnoreCase(request.getPaymentMethod())) {
+            // Amount is already verified during Razorpay signature verification
+            // However, we should make sure the requested amount matches the trip fare EXACTLY
+            if (request.getAmount() == null || request.getAmount().compareTo(trip.getTotalFare()) != 0) {
+                throw new IllegalArgumentException("Payment amount must exactly match the ride fare");
+            }
+            // No wallet deduction for direct razorpay payment
+        } else {
+            throw new IllegalArgumentException("Invalid Payment Method");
         }
 
         PaymentTransaction transaction = PaymentTransaction.builder()
@@ -139,6 +152,7 @@ public class PaymentService {
                 .build();
         
         transaction = transactionRepository.save(transaction);
+        auditService.logEvent("TRIP_PAYMENT", userEmail, "Paid " + trip.getTotalFare() + " via " + request.getPaymentMethod() + " for trip " + trip.getId(), "IP_NOT_CAPTURED");
         
         trip.setStatus(TripStatus.PAYMENT_COMPLETED);
         tripRepository.save(trip);
@@ -154,10 +168,12 @@ public class PaymentService {
                 .wallet(driverWallet)
                 .amount(trip.getTotalFare())
                 .paymentMethod("SYSTEM_TRANSFER")
-                .transactionType("EARNING")
+                .transactionType("CREDIT")
                 .status("SUCCESS")
                 .build();
         transactionRepository.save(driverTransaction);
+        
+        auditService.logEvent("DRIVER_CREDIT", trip.getRide().getDriver().getEmail(), "Credited " + trip.getTotalFare() + " for trip " + trip.getId(), "IP_NOT_CAPTURED");
 
         return mapToDto(transaction);
     }
