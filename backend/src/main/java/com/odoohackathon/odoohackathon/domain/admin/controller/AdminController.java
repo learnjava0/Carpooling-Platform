@@ -61,7 +61,7 @@ public class AdminController {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
                 .driverLicense(request.getDriverLicense())
-                .role(Role.DRIVER)
+                .role(Role.EMPLOYEE)
                 .company(company)
                 .build();
 
@@ -96,17 +96,26 @@ public class AdminController {
     @GetMapping("/dashboard/stats")
     public ResponseEntity<Map<String, Long>> getDashboardStats() {
         long totalUsers = userRepository.count();
-        long totalDrivers = userRepository.findAll().stream()
-                .filter(u -> u.getRole() == Role.DRIVER)
+        long totalDrivers = vehicleRepository.findAll().stream()
+                .map(v -> v.getOwner().getId())
+                .distinct()
                 .count();
         long totalVehicles = vehicleRepository.count();
         long totalTrips = tripRepository.count();
+        
+        // Mocking distance and fuel stats since live GPS isn't persistently tracked yet
+        long totalDistanceKm = totalTrips * 12; // avg 12 km per trip
+        long fuelConsumptionLiters = totalDistanceKm / 15; // avg 15 km/l
+        long costPerKm = 10; // avg 10 Rs/km
 
         Map<String, Long> stats = Map.of(
                 "totalUsers", totalUsers,
                 "totalDrivers", totalDrivers,
                 "totalVehicles", totalVehicles,
-                "totalTrips", totalTrips
+                "totalTrips", totalTrips,
+                "totalDistance", totalDistanceKm,
+                "fuelConsumption", fuelConsumptionLiters,
+                "costPerKm", costPerKm
         );
 
         return ResponseEntity.ok(stats);

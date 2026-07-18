@@ -43,6 +43,17 @@ public class TripController {
         return ResponseEntity.ok(tripService.updateTripStatus(tripId, status, driverEmail));
     }
 
+    @PatchMapping("/{tripId}/cancel")
+    public ResponseEntity<TripDTO> cancelTripPassenger(
+            @PathVariable Long tripId,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        // Just calling updateTripStatus and assuming service handles passenger cancellation logic,
+        // or just bypassing strict driver check for the hackathon
+        return ResponseEntity.ok(tripService.cancelTripAsPassenger(tripId, userEmail));
+    }
+
     @PostMapping("/{tripId}/verify-otp")
     public ResponseEntity<TripDTO> verifyOtpAndStart(
             @PathVariable Long tripId,

@@ -113,6 +113,28 @@ public class TripService {
         return mapToDto(tripRepository.save(trip));
     }
 
+    @Transactional
+    public TripDTO cancelTripAsPassenger(Long tripId, String userEmail) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        if (!trip.getPassenger().getEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("Only the passenger who booked this trip can cancel it");
+        }
+
+        if (trip.getStatus() != TripStatus.BOOKED) {
+            throw new IllegalArgumentException("Cannot cancel a trip that is already started or completed");
+        }
+
+        // Restore seats
+        Ride ride = trip.getRide();
+        ride.setAvailableSeats(ride.getAvailableSeats() + trip.getBookedSeats());
+        rideRepository.save(ride);
+
+        trip.setStatus(TripStatus.CANCELLED);
+        return mapToDto(tripRepository.save(trip));
+    }
+
     private TripDTO mapToDto(Trip trip) {
         return TripDTO.builder()
                 .id(trip.getId())
