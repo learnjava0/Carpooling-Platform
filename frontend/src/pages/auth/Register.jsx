@@ -39,10 +39,15 @@ function Register() {
   const onSubmit = async (values) => {
     setServerError('');
     try {
+      // register() now persists the session (auto-login) — redirect directly to dashboard
       await registerUser(values);
-      navigate('/login', { replace: true, state: { message: 'Account created. Please log in.' } });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      setServerError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setServerError(
+        err.response?.data?.message ||
+        err.message ||
+        'Registration failed. Please try again.'
+      );
     }
   };
 
@@ -84,8 +89,8 @@ function Register() {
             </div>
 
             <InputField error={errors.phone} icon={Phone} inputMode="tel" label="Phone" placeholder="10-digit number" registration={register('phone')} />
-            <InputField autoComplete="email" error={errors.email} icon={Mail} label="Email" placeholder="work@company.com" registration={register('email')} />
-            <InputField error={errors.companyCode} icon={Building2} label="Company Code" placeholder="Company access code" registration={register('companyCode')} />
+            <InputField autoComplete="email" error={errors.email} icon={Mail} label="Work Email" placeholder="work@company.com" registration={register('email')} />
+            <InputField error={errors.companyCode} icon={Building2} label="Company Code" placeholder="Company access code (optional)" registration={register('companyCode')} />
 
             <PasswordInput autoComplete="new-password" error={errors.password} label="Password" placeholder="Min 8 characters" registration={register('password')} />
             <PasswordInput autoComplete="new-password" error={errors.confirmPassword} label="Confirm Password" placeholder="Repeat password" registration={register('confirmPassword')} />

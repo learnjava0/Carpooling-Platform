@@ -4,9 +4,9 @@ import { useAuth } from '../../hooks/useAuth';
 
 const sections = [
   { title: 'Account', items: [
-    { icon: User, label: 'Edit Profile', sub: 'Name, photo, contact details' },
-    { icon: Bell, label: 'Notifications', sub: 'Ride and payment alerts' },
-    { icon: Shield, label: 'Privacy & Security', sub: 'Password, 2FA, data settings' },
+    { icon: User,      label: 'Edit Profile',      sub: 'Name, photo, contact details' },
+    { icon: Bell,      label: 'Notifications',     sub: 'Ride and payment alerts' },
+    { icon: Shield,    label: 'Privacy & Security', sub: 'Password, 2FA, data settings' },
   ]},
   { title: 'Support', items: [
     { icon: HelpCircle, label: 'Help Center', sub: 'FAQs and support articles' },
@@ -14,7 +14,10 @@ const sections = [
 ];
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
+
+  const roleBadge = isAdmin ? 'Company Admin' : 'Employee';
+  const roleCls   = isAdmin ? 'badge-blue'   : 'badge-green';
 
   return (
     <AppShell title="Settings">
@@ -25,9 +28,23 @@ export default function Settings() {
             <div className="user-avatar" style={{ width: 60, height: 60, fontSize: '1.4rem', margin: '0 auto 12px' }}>
               {user?.firstName?.[0] || 'U'}
             </div>
-            <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>{user?.firstName || 'Demo'} {user?.lastName || 'User'}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-3)', margin: '3px 0 10px' }}>{user?.email || 'demo@example.com'}</div>
-            <span className="badge badge-green">Employee</span>
+            <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>
+              {user?.firstName || 'User'} {user?.lastName || ''}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-3)', margin: '3px 0 4px' }}>
+              {user?.email || ''}
+            </div>
+            {user?.phoneNumber && (
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginBottom: 10 }}>
+                {user.phoneNumber}
+              </div>
+            )}
+            <span className={`badge ${roleCls}`}>{roleBadge}</span>
+            {user?.companyName && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 8 }}>
+                🏢 {user.companyName}
+              </div>
+            )}
           </div>
 
           <button className="btn btn-danger btn-full" onClick={logout}>
@@ -37,11 +54,19 @@ export default function Settings() {
 
         {/* Settings sections */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {sections.map(s => (
+          {sections.map((s) => (
             <div key={s.title} className="card">
               <p className="section-label">{s.title}</p>
               {s.items.map((item, i) => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < s.items.length - 1 ? '1px solid var(--border)' : 'none', cursor: 'pointer' }}>
+                <div
+                  key={item.label}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '12px 0',
+                    borderBottom: i < s.items.length - 1 ? '1px solid var(--border)' : 'none',
+                    cursor: 'pointer',
+                  }}
+                >
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <item.icon size={16} color="var(--text-2)" />
                   </div>

@@ -18,21 +18,31 @@ function Login() {
   const [serverError, setServerError] = useState('');
   const successMessage = location.state?.message;
 
-  const { formState: { errors, isSubmitting }, handleSubmit, register } = useForm({
+  const { formState: { errors, isSubmitting }, handleSubmit, register, setValue } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = async (values, role = 'employee') => {
+  const fillDemo = (email, password) => {
+    setValue('email', email);
+    setValue('password', password);
+  };
+
+  const onSubmit = async (values) => {
     setServerError('');
     try {
-      await login(values);
-      navigate('/splash', {
-        replace: true,
-        state: { next: location.state?.from?.pathname || (role === 'admin' ? '/admin' : '/dashboard') },
-      });
+      const session = await login(values);
+      const role = session?.user?.role;
+      // Redirect admin to /admin, employees to /dashboard (or wherever they came from)
+      const defaultPath = role === 'COMPANY_ADMIN' ? '/admin' : '/dashboard';
+      const next = location.state?.from?.pathname || defaultPath;
+      navigate(next, { replace: true });
     } catch (err) {
-      setServerError(err.response?.data?.message || 'Login failed. Check your details.');
+      setServerError(
+        err.response?.data?.message ||
+        err.message ||
+        'Login failed. Check your credentials.'
+      );
     }
   };
 
@@ -55,12 +65,22 @@ function Login() {
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Sign in to your account to continue</p>
 
-          <form className="auth-form" onSubmit={(e) => { e.preventDefault(); handleSubmit((v) => onSubmit(v, 'employee'))(); }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px', padding: '12px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--brand-dim)' }}>
+            <div style={{ gridColumn: '1 / -1', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--brand)', textTransform: 'uppercase', textAlign: 'center', marginBottom: '4px' }}>Hackathon Demo Quick Login</div>
+            <button type="button" className="secondary-button" onClick={() => fillDemo('admin@odoo.com', 'admin123')}>
+              Admin
+            </button>
+            <button type="button" className="secondary-button" onClick={() => fillDemo('john@odoo.com', 'password123')}>
+              Employee
+            </button>
+          </div>
+
+          <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
             <InputField
               autoComplete="email"
               error={errors.email}
               icon={Mail}
-              label="Email / Mobile"
+              label="Email"
               placeholder="name@company.com"
               registration={register('email')}
             />
@@ -83,20 +103,13 @@ function Login() {
             {successMessage && <p className="alert alert-success">{successMessage}</p>}
 
             <PrimaryButton isLoading={isSubmitting} type="submit">
-              Log in as Employee
+              Sign In
             </PrimaryButton>
 
-            <div className="divider">Or</div>
-
-            <button
-              type="button"
-              className="secondary-button"
-              style={{ width: '100%', minHeight: '46px' }}
-              onClick={() => handleSubmit((v) => onSubmit(v, 'admin'))()}
-            >
-              <Shield size={16} />
-              Log in as Admin
-            </button>
+            <div className="divider">
+              <Shield size={13} style={{ opacity: 0.5 }} />
+              Role is determined automatically from your account
+            </div>
 
             <p className="auth-switch">
               Don't have an account?{' '}

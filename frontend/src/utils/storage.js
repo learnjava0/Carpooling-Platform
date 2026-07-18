@@ -1,9 +1,19 @@
+/**
+ * Storage utility
+ * Backend returns a single `token` (JWT). We store it as `accessToken`
+ * for compatibility with the axios interceptor. No separate refreshToken
+ * is issued by this backend — the JWT itself is long-lived (24h).
+ */
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 const USER_KEY = 'user';
 
-export const saveTokens = ({ accessToken, refreshToken }) => {
-  if (accessToken) localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+/**
+ * Accept either { token } (backend shape) or { accessToken, refreshToken } (legacy shape).
+ */
+export const saveTokens = ({ token, accessToken, refreshToken }) => {
+  const jwt = token || accessToken;
+  if (jwt) localStorage.setItem(ACCESS_TOKEN_KEY, jwt);
   if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 };
 
@@ -17,9 +27,7 @@ export const saveUser = (user) => {
 
 export const getUser = () => {
   const storedUser = localStorage.getItem(USER_KEY);
-
   if (!storedUser) return null;
-
   try {
     return JSON.parse(storedUser);
   } catch {

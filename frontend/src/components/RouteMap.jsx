@@ -98,13 +98,21 @@ function RouteMap({ from, to, height = '300px', fallback = [23.0225, 72.5714] })
       : fallback;
 
   return (
-    <MapView
-      height={height}
-      center={center}
-      zoom={12}
-      markers={markers}
-      routePoints={routePoints}
-    />
+    <div className="relative w-full h-full min-h-[300px]">
+      {((from && from.trim().length > 2 && !fromCoord) || (to && to.trim().length > 2 && !toCoord)) && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-destructive text-destructive-foreground px-4 py-2 rounded-full shadow-lg text-xs font-bold flex items-center gap-2">
+          Unable to find exact location. Check spelling.
+        </div>
+      )}
+      <MapView
+        height={height}
+        center={center}
+        zoom={12}
+        markers={markers}
+        routePoints={routePoints}
+        className="w-full h-full"
+      />
+    </div>
   );
 }
 

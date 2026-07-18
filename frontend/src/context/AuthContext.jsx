@@ -3,7 +3,6 @@ import { authService } from '../services/authService';
 import {
   clearStorage,
   getAccessToken,
-  getRefreshToken,
   getUser,
   saveTokens,
   saveUser,
@@ -20,7 +19,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const persistSession = useCallback((session) => {
-    saveTokens(session);
+    saveTokens(session);          // accepts { accessToken } or { token }
     saveUser(session.user);
     setUser(session.user);
   }, []);
@@ -34,23 +33,18 @@ export function AuthProvider({ children }) {
     [persistSession],
   );
 
-  const register = useCallback(async (payload) => authService.register(payload), []);
-
-  const refreshToken = useCallback(async () => {
-    const storedRefreshToken = getRefreshToken();
-
-    if (!storedRefreshToken) return null;
-
-    const session = await authService.refreshToken(storedRefreshToken);
-    saveTokens(session);
-
-    if (session.user) {
-      saveUser(session.user);
-      setUser(session.user);
-    }
-
-    return session;
-  }, []);
+  /**
+   * Register auto-logs user in (backend returns token on register).
+   * We persist the session so they don't need to log in again.
+   */
+  const register = useCallback(
+    async (payload) => {
+      const session = await authService.register(payload);
+      persistSession(session);
+      return session;
+    },
+    [persistSession],
+  );
 
   const getCurrentUser = useCallback(async () => {
     const currentUser = await authService.getCurrentUser();
@@ -69,14 +63,11 @@ export function AuthProvider({ children }) {
       }
 
       try {
+        // Try to restore user from localStorage (no /me endpoint in this backend)
         await getCurrentUser();
       } catch {
-        try {
-          await refreshToken();
-          await getCurrentUser();
-        } catch {
-          logout();
-        }
+        // Token may be stale — clear and go to login
+        logout();
       } finally {
         setIsBootstrapping(false);
       }
@@ -86,20 +77,21 @@ export function AuthProvider({ children }) {
 
     window.addEventListener('auth:logout', logout);
     return () => window.removeEventListener('auth:logout', logout);
-  }, [getCurrentUser, logout, refreshToken]);
+  }, [getCurrentUser, logout]);
 
   const value = useMemo(
     () => ({
       user,
+      role: user?.role || null,           // 'EMPLOYEE' | 'COMPANY_ADMIN' | null
       isAuthenticated: Boolean(user && getAccessToken()),
+      isAdmin: user?.role === 'COMPANY_ADMIN',
       isBootstrapping,
       login,
       logout,
       register,
-      refreshToken,
       getCurrentUser,
     }),
-    [getCurrentUser, isBootstrapping, login, logout, refreshToken, register, user],
+    [getCurrentUser, isBootstrapping, login, logout, register, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
