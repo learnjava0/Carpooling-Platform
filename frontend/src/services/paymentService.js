@@ -27,6 +27,11 @@ export const paymentService = {
     return response.data;
   },
 
+  getMyTransactions: async () => {
+    const response = await api.get('/payments/transactions');
+    return response.data;
+  },
+
   openRazorpayWidget: (orderData, user, onSuccess, onError) => {
     const options = {
       key: 'rzp_test_TEtkcWeUnkc6xQ', // Provided Razorpay Key

@@ -10,12 +10,15 @@ const Wallet = () => {
   const [rechargeAmount, setRechargeAmount] = useState('');
   const [processingRecharge, setProcessingRecharge] = useState(false);
   const [error, setError] = useState('');
+  const [transactions, setTransactions] = useState([]);
 
   const fetchWallet = async () => {
     try {
       setLoading(true);
       const data = await paymentService.getWalletBalance();
       setBalance(data.balance);
+      const txData = await paymentService.getMyTransactions();
+      setTransactions(txData);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch wallet balance.');
@@ -133,9 +136,35 @@ const Wallet = () => {
         </div>
         
         <div className="space-y-4">
-          <div className="text-center py-8 text-slate-500">
-            Transaction history will appear here once you start taking rides or recharging your wallet.
-          </div>
+          {transactions.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              Transaction history will appear here once you start taking rides or recharging your wallet.
+            </div>
+          ) : (
+            transactions.map(tx => (
+              <div key={tx.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                <div className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
+                    tx.transactionType === 'DEDUCTION' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                  }`}>
+                    {tx.transactionType === 'DEDUCTION' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-white">
+                      {tx.transactionType === 'RECHARGE' ? 'Wallet Top-up' : 
+                       tx.transactionType === 'DEDUCTION' ? 'Trip Payment' : 'Trip Earnings'}
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      {new Date(tx.createdAt).toLocaleDateString()} at {new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {tx.paymentMethod}
+                    </p>
+                  </div>
+                </div>
+                <div className={`font-bold ${tx.transactionType === 'DEDUCTION' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                  {tx.transactionType === 'DEDUCTION' ? '-' : '+'}₹{tx.amount.toFixed(2)}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

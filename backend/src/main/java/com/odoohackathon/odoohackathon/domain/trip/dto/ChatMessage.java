@@ -1,4 +1,4 @@
-package com.odoohackathon.odoohackathon.domain.chat.dto;
+package com.odoohackathon.odoohackathon.domain.trip.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +15,6 @@ public class ChatMessage {
     private Long tripId;
     private String senderName;
     private String senderEmail;
-    private String message;
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private String content;
+    private String timestamp;
 }

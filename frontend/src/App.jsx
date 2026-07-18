@@ -17,6 +17,7 @@ import Profile from './pages/employee/Profile';
 import Settings from './pages/employee/Settings';
 import Wallet from './pages/employee/Wallet';
 import SavedPlaces from './pages/employee/SavedPlaces';
+import Chat from './pages/employee/Chat';
 import LiveTracking from './pages/employee/LiveTracking';
 import SplashScreen from './pages/SplashScreen';
 // Placeholders for remaining features
@@ -76,6 +77,8 @@ function App() {
           }>
             <Route index element={<DiscoverRides />} />
             <Route path="trips" element={<MyTrips />} />
+          <Route path="saved-places" element={<SavedPlaces />} />
+          <Route path="chat" element={<Chat />} />
             <Route path="active-rides" element={<ActiveRides />} />
             <Route path="publish" element={<PublishRide />} />
             <Route path="vehicles" element={<MyVehicles />} />

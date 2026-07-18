@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, Navigation, ArrowLeft } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapPin, Navigation, ArrowLeft, Phone, MessageSquare, Clock } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import SockJS from 'sockjs-client';
@@ -12,7 +12,6 @@ import { Client } from '@stomp/stompjs';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import { Clock } from 'lucide-react';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -44,6 +43,7 @@ const LiveTracking = () => {
   const [eta, setEta] = useState('15 mins');
   const [simulationActive, setSimulationActive] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
+  const [routePath, setRoutePath] = useState(null);
   const watchIdRef = useRef(null);
 
   const isDriver = trip?.ride?.driver?.id === user?.id;
@@ -121,42 +121,80 @@ const LiveTracking = () => {
     };
   }, [isDriver, stompClient, trip]);
 
+  // Fetch realistic route (Rapido style)
   useEffect(() => {
-    if (simulationActive && isDriver && stompClient && stompClient.connected) {
-      // Simulate moving north-east from Delhi
-      let currentLat = 28.7041;
-      let currentLng = 77.1025;
-      setPosition([currentLat, currentLng]);
+    if (!trip) return;
+    const fetchRoute = async () => {
+      try {
+        // Simple geocoding for demo (In production, backend should provide exact lat/lng)
+        const getCoords = async (query) => {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          if (data && data.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+          return null;
+        };
+        
+        const start = await getCoords(trip.ride.pickupLocation + ", India");
+        const end = await getCoords(trip.ride.destination + ", India");
+        
+        if (start && end) {
+          // Default start position to pickup if driver hasn't sent anything
+          if (!position) setPosition([start.lat, start.lon]);
+
+          // Fetch OSRM route
+          const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${start.lon},${start.lat};${end.lon},${end.lat}?geometries=geojson`);
+          const osrmData = await osrmRes.json();
+          
+          if (osrmData.routes && osrmData.routes.length > 0) {
+            // OSRM returns [lng, lat], we need [lat, lng] for Leaflet
+            const coords = osrmData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            setRoutePath(coords);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching route:", err);
+      }
+    };
+    fetchRoute();
+  }, [trip]);
+
+  // Simulate moving along the actual road path
+  useEffect(() => {
+    if (simulationActive && isDriver && stompClient && stompClient.connected && routePath) {
+      let index = 0;
+      setPosition(routePath[0]);
       
       const interval = setInterval(() => {
-        currentLat += 0.001;
-        currentLng += 0.001;
-        setPosition([currentLat, currentLng]);
-        stompClient.publish({
-          destination: `/app/location/${trip.ride.id}`,
-          body: JSON.stringify({ lat: currentLat, lng: currentLng })
-        });
-      }, 3000);
+        if (index < routePath.length - 1) {
+          index++;
+          const currentPos = routePath[index];
+          setPosition(currentPos);
+          stompClient.publish({
+            destination: `/app/location/${trip.ride.id}`,
+            body: JSON.stringify({ lat: currentPos[0], lng: currentPos[1] })
+          });
+        }
+      }, 1000);
       return () => clearInterval(interval);
     }
-  }, [simulationActive, isDriver, stompClient, trip]);
+  }, [simulationActive, isDriver, stompClient, trip, routePath]);
 
   // Demo Mode for Passenger (if they don't want to open two windows)
   useEffect(() => {
-    if (demoMode && !isDriver) {
-      let currentLat = 28.7041;
-      let currentLng = 77.1025;
-      setPosition([currentLat, currentLng]);
+    if (demoMode && !isDriver && routePath) {
+      let index = 0;
+      setPosition(routePath[0]);
       setConnectionStatus('Demo Mode Active');
       
       const interval = setInterval(() => {
-        currentLat += 0.001;
-        currentLng += 0.001;
-        setPosition([currentLat, currentLng]);
-      }, 3000);
+         if (index < routePath.length - 1) {
+          index++;
+          setPosition(routePath[index]);
+        }
+      }, 1000);
       return () => clearInterval(interval);
     }
-  }, [demoMode, isDriver]);
+  }, [demoMode, isDriver, routePath]);
 
   // Simulate ETA decreasing over time
   useEffect(() => {
@@ -245,6 +283,15 @@ const LiveTracking = () => {
           />
           {position && (
             <>
+              {routePath && (
+                <Polyline 
+                  positions={routePath} 
+                  color="#3b82f6" 
+                  weight={5} 
+                  opacity={0.7} 
+                  dashArray="10, 10" 
+                />
+              )}
               <Marker position={position}>
                 <Popup>
                   {isDriver ? "You are here" : "Driver is here"}
@@ -264,6 +311,17 @@ const LiveTracking = () => {
                 <div className="text-2xl font-bold text-primary-600 dark:text-primary-400 flex items-center">
                   <Clock className="w-5 h-5 mr-2" />
                   {eta}
+                </div>
+                <div className="flex space-x-2 mt-2">
+                  <button 
+                    onClick={() => navigate('/employee/chat', { state: { trip } })}
+                    className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center hover:bg-green-200 transition-colors">
+                    <Phone className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
               <div className="text-right">
