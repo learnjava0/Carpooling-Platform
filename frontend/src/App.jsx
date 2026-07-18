@@ -1,55 +1,65 @@
-import { ArrowRight, BarChart3, Boxes, ShieldCheck } from 'lucide-react';
-
-const features = [
-  {
-    icon: Boxes,
-    title: 'Modular Setup',
-    description: 'Start with a simple React structure that can grow into routed pages, shared components, and API services.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Dashboard Ready',
-    description: 'A clean first screen for an operational app, with focused areas for metrics, actions, and workflow status.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Practical Defaults',
-    description: 'Vite, ESLint, React 19, and lightweight styling are ready for fast local development.',
-  },
-];
+import { LogOut } from 'lucide-react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import Logo from './components/Logo';
+import { useAuth } from './hooks/useAuth';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import Splash from './pages/auth/Splash';
+import ProtectedRoute from './routes/ProtectedRoute';
+import PublicRoute from './routes/PublicRoute';
 
 function App() {
   return (
-    <main className="app-shell">
-      <section className="intro-panel" aria-labelledby="page-title">
-        <div>
-          <p className="eyebrow">Odoo Hackathon 2026</p>
-          <h1 id="page-title">Odoo X KSV Frontend</h1>
-          <p className="intro-copy">
-            A focused React starter for building your hackathon product UI.
-          </p>
-        </div>
+    <Routes>
+      <Route path="/" element={<Splash />} />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPlaceholder />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate replace to="/" />} />
+    </Routes>
+  );
+}
 
-        <button className="primary-action" type="button">
-          Start Building
-          <ArrowRight size={18} aria-hidden="true" />
+function DashboardPlaceholder() {
+  const { logout, user } = useAuth();
+
+  return (
+    <main className="dashboard-page">
+      <nav className="dashboard-nav">
+        <Logo />
+        <button className="secondary-button" type="button" onClick={logout}>
+          <LogOut size={16} aria-hidden="true" />
+          Logout
         </button>
-      </section>
-
-      <section className="feature-grid" aria-label="Frontend foundation">
-        {features.map((feature) => {
-          const Icon = feature.icon;
-
-          return (
-            <article className="feature-card" key={feature.title}>
-              <span className="feature-icon">
-                <Icon size={22} aria-hidden="true" />
-              </span>
-              <h2>{feature.title}</h2>
-              <p>{feature.description}</p>
-            </article>
-          );
-        })}
+      </nav>
+      <section className="dashboard-card">
+        <p className="eyebrow">Authentication Complete</p>
+        <h1>Welcome{user?.firstName ? `, ${user.firstName}` : ''}</h1>
+        <p>
+          You are signed in. The protected dashboard route is ready for the next
+          frontend module.
+        </p>
       </section>
     </main>
   );
