@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.force-light-mode *));
+
+@theme {
+  --color-primary-50: #f9f9f9;
+  --color-primary-100: #f4f4f4;
+  --color-primary-200: #e0e0e0;
+  --color-primary-300: #c2c2c2;
+  --color-primary-400: #8c8c8c;
+  --color-primary-500: #171a20; /* Tesla Charcoal */
+  --color-primary-600: #111419;
+  --color-primary-700: #0b0c0f;
+
+  --color-secondary-50: #fdf4f4;
+  --color-secondary-500: #e82127; /* Tesla Red */
+  --color-secondary-600: #d01d23;
+
+  --font-sans: 'Inter', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-[#171a20] antialiased font-sans transition-colors duration-300;
+  }
+
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+  }
+
+  @keyframes progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-2 bg-[#171a20] text-white dark:bg-[#f4f4f4] dark:text-[#171a20] rounded-md font-medium hover:bg-black dark:hover:bg-white hover:opacity-90 transition-opacity duration-200 active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply px-6 py-2 bg-transparent text-[#171a20] dark:text-white border-2 border-[#171a20] dark:border-white rounded-md font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-[0.98];
+  }
+
+  .card {
+    @apply bg-white dark:bg-[#171a20] rounded-md border border-slate-200 dark:border-slate-800 p-6 transition-all duration-300 shadow-sm;
+  }
+  
+  .glass-panel {
+    @apply bg-white/95 dark:bg-[#171a20]/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-sm rounded-md;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-1 focus:ring-[#171a20] dark:focus:ring-white focus:border-[#171a20] dark:focus:border-white outline-none transition-all duration-200 text-[#171a20] dark:text-white placeholder:text-slate-400;
+  }
+}
