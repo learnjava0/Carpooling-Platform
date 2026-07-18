@@ -29,8 +29,10 @@ public class CompanyConfiguration {
     private BigDecimal defaultTravelCostPerKm;
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @PreUpdate

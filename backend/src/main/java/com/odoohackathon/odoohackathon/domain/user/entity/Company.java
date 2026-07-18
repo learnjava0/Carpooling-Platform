@@ -24,5 +24,6 @@ public class Company {
     private String address;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean active = true;
 }

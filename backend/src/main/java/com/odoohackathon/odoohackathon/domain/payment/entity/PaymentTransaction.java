@@ -39,5 +39,6 @@ public class PaymentTransaction {
     private String status; // e.g., SUCCESS, PENDING, FAILED
 
     @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
