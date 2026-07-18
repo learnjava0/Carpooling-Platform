@@ -12,46 +12,36 @@ function AuthLayout({ children, eyebrow, title }) {
         <header className="auth-topbar">
           <Logo compact />
           <div className="topbar-actions">
-            <span>Welcome</span>
             <ThemeToggle />
-            <Sparkles size={16} aria-hidden="true" />
           </div>
         </header>
 
         <div className={`auth-frame ${isRegister ? 'auth-frame-register' : ''}`}>
-          <aside className="auth-art" aria-label="Carpooling onboarding illustration">
-            <Link className="back-home" to="/">
-              <ArrowLeft size={16} />
-              Back to home
-            </Link>
-            <div>
-              <p className="eyebrow">Fast shared rides</p>
-              <h2>
-                {isRegister
-                  ? 'Start commuting with verified coworkers.'
-                  : 'Your office ride is a few taps away.'}
-              </h2>
-              <p>
-                Match with trusted riders nearby, split travel costs, and keep your
-                everyday route predictable.
-              </p>
-            </div>
-            <div className="mini-map-card">
-              <Route size={20} />
-              <div>
-                <strong>Live route matching</strong>
-                <span>Pickup, seats, timing and driver details in one clean flow.</span>
-              </div>
-            </div>
-          </aside>
-          <section className="auth-content">
-            <div className="auth-heading">
-              <p>{eyebrow}</p>
-              <CircleUserRound size={28} aria-hidden="true" />
-            </div>
-            <h1 id="auth-title">{title}</h1>
+          <section className="auth-content" style={{ padding: '64px 48px' }}>
+            <h1 id="auth-title" style={{ fontSize: '2.5rem', marginBottom: '8px', letterSpacing: '-1px' }}>{title}</h1>
             {children}
           </section>
+          
+          {/* Abstract Art Side */}
+          <aside className="auth-art" aria-label="Carpooling onboarding illustration">
+            <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
+              <div style={{ 
+                width: '100px', height: '100px', 
+                background: 'var(--panel-solid)', 
+                borderRadius: '50%', 
+                margin: '0 auto 24px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: 'var(--shadow)'
+              }}>
+                <Route size={40} color="var(--brand)" />
+              </div>
+              <h2 style={{ fontSize: '1.8rem', color: 'var(--text)' }}>
+                {isRegister
+                  ? 'Start commuting smarter.'
+                  : 'Welcome to the future of commute.'}
+              </h2>
+            </div>
+          </aside>
         </div>
       </section>
     </main>

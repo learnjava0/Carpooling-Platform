@@ -192,8 +192,10 @@ a {
 .nav-cta,
 .primary-button {
   color: var(--brand-dark);
-  background: linear-gradient(135deg, var(--brand), #ffd86f);
-  box-shadow: 0 18px 34px rgba(244, 176, 0, 0.25);
+  background: var(--brand);
+  border-radius: 30px;
+  border: 1px solid var(--brand);
+
 }
 
 .nav-cta {
@@ -539,10 +541,10 @@ a {
   width: min(1040px, 100%);
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 30px;
-  background: var(--panel);
+  border-radius: 12px;
+  background: var(--panel-solid);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
+
 }
 
 .auth-topbar {
@@ -577,28 +579,34 @@ a {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   overflow: hidden;
   padding: 34px;
-  color: #fff8e4;
-  background:
-    radial-gradient(circle at 22% 18%, rgba(244, 176, 0, 0.28), transparent 16rem),
-    linear-gradient(145deg, #23221f 0%, #111 100%);
+  color: var(--text);
+  background: var(--bg-soft);
+}
+
+.auth-art::before {
+  content: "";
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  background: var(--brand);
+  border-radius: 20px;
+  transform: rotate(15deg) translate(-100px, -150px);
+  box-shadow: 20px 20px 60px rgba(15, 98, 254, 0.2);
 }
 
 .auth-art::after {
-  position: absolute;
-  right: -70px;
-  bottom: 120px;
-  width: 330px;
-  height: 150px;
-  border-radius: 76px 38px 30px 30px;
-  background:
-    radial-gradient(circle at 24% 112%, #111 0 28px, transparent 29px),
-    radial-gradient(circle at 75% 112%, #111 0 28px, transparent 29px),
-    linear-gradient(135deg, #f4b000 0%, #ffd971 55%, #23221f 56%);
-  box-shadow: 0 28px 42px rgba(0, 0, 0, 0.26);
   content: "";
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: #cbd5e1;
+  border-radius: 40px;
+  transform: rotate(-10deg) translate(150px, 150px);
+  box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.05);
 }
 
 .auth-art h2 {
@@ -738,9 +746,10 @@ a {
 }
 
 .input-shell:focus-within {
-  border-color: rgba(244, 176, 0, 0.85);
-  box-shadow: 0 0 0 4px rgba(244, 176, 0, 0.16);
-  transform: translateY(-1px);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(15, 98, 254, 0.2);
+  transform: translateY(0);
+
 }
 
 .input-shell input {
@@ -1175,4 +1184,217 @@ a {
   .two-column {
     grid-template-columns: 1fr;
   }
+}
+
+/* ERP Layout Styles */
+.erp-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.erp-sidebar {
+  width: 260px;
+  background: var(--panel-solid);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 10;
+}
+
+.erp-sidebar-header {
+  padding: 0 24px 24px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+
+.erp-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  padding: 0 16px;
+  overflow-y: auto;
+}
+
+.erp-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.erp-nav-item:hover {
+  background: rgba(45, 38, 24, 0.04);
+  color: var(--text);
+}
+
+.erp-nav-item.active {
+  background: var(--brand);
+  color: var(--brand-dark);
+}
+
+:root[data-theme="dark"] .erp-nav-item.active {
+  color: var(--brand-dark);
+}
+
+.erp-nav-item svg {
+  flex-shrink: 0;
+}
+
+.erp-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.erp-header {
+  height: 72px;
+  background: var(--panel);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.erp-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.erp-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.erp-content {
+  flex: 1;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.erp-user-profile {
+  margin-top: auto;
+  padding: 16px 24px 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--brand-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.user-role {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Data Tables & Lists */
+.erp-card {
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+
+.erp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.erp-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-warning { background: #fef08a; color: #854d0e; }
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-info { background: #dbeafe; color: #1e40af; }
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.erp-table th, .erp-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.erp-table th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.erp-table td {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.erp-table tr:last-child td {
+  border-bottom: none;
 }

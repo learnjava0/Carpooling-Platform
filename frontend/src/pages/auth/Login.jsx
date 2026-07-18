@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail } from 'lucide-react';
+import { Mail, Shield, User } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -29,12 +29,13 @@ function Login() {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values, role) => {
     setServerError('');
 
     try {
       await login(values);
-      navigate(location.state?.from?.pathname || '/dashboard', { replace: true });
+      // Navigate to splash after login instead of dashboard
+      navigate('/splash', { replace: true, state: { next: location.state?.from?.pathname || (role === 'admin' ? '/admin' : '/dashboard') } });
     } catch (error) {
       setServerError(
         error.response?.data?.message || 'Login failed. Please check your details.',
@@ -43,25 +44,16 @@ function Login() {
   };
 
   return (
-    <AuthLayout eyebrow="Login To Continue" title="Login">
-      <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
-        <button className="google-button" type="button">
-          <span aria-hidden="true">G</span>
-          Continue with Google
-        </button>
-
-        <div className="divider">
-          <span />
-          <small>Or continue with email</small>
-          <span />
-        </div>
-
+    <AuthLayout eyebrow="Welcome Back" title="Hi there!">
+      <form className="auth-form" onSubmit={(e) => { e.preventDefault(); handleSubmit((v) => onSubmit(v, 'employee'))(); }}>
+        <p style={{ margin: '0 0 24px', color: 'var(--muted)', fontWeight: 500 }}>Have we met before?</p>
+        
         <InputField
           autoComplete="email"
           error={errors.email}
           icon={Mail}
-          label="Email / Mobile"
-          placeholder="Email or mobile"
+          label="Email"
+          placeholder="name@email.com"
           registration={register('email')}
         />
 
@@ -69,25 +61,46 @@ function Login() {
           autoComplete="current-password"
           error={errors.password}
           label="Password"
-          placeholder="Password"
+          placeholder="********"
           registration={register('password')}
         />
-
-        <button className="link-button" type="button">
-          Forgot Password?
-        </button>
 
         {serverError && <p className="alert error-alert">{serverError}</p>}
         {successMessage && <p className="alert success-alert">{successMessage}</p>}
 
-        <PrimaryButton isLoading={isSubmitting} type="submit">
-          Login
+        <PrimaryButton isLoading={isSubmitting} type="submit" style={{ marginTop: '16px' }}>
+          Log in as Employee
         </PrimaryButton>
 
-        <div className="auth-switch">
-          <span>Create New Account</span>
-          <Link className="secondary-button" to="/register">
-            Sign Up
+        <div className="divider" style={{ margin: '24px 0' }}>
+          <span style={{ flex: 1, height: '1px', background: 'var(--line)' }} />
+          <small style={{ color: 'var(--muted)', textTransform: 'uppercase', fontSize: '0.75rem', fontWeight: 600 }}>OR</small>
+          <span style={{ flex: 1, height: '1px', background: 'var(--line)' }} />
+        </div>
+
+        <button 
+          className="google-button" 
+          type="button"
+          onClick={() => handleSubmit((v) => onSubmit(v, 'admin'))()}
+          style={{ width: '100%', background: 'transparent', border: '1px solid var(--text)', color: 'var(--text)', borderRadius: '30px' }}
+        >
+          <Shield size={18} />
+          <span>Log in as Admin</span>
+        </button>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', fontSize: '0.9rem' }}>
+          <button className="link-button" type="button" style={{ fontWeight: 600, color: 'var(--text)' }}>
+            Forgot my password
+          </button>
+          <button className="link-button" type="button" style={{ fontWeight: 600, color: 'var(--text)' }}>
+            Log in with SSO
+          </button>
+        </div>
+        
+        <div style={{ marginTop: '16px', fontSize: '0.9rem' }}>
+          <span style={{ color: 'var(--muted)' }}>Don't have an account? </span>
+          <Link to="/register" style={{ fontWeight: 600, color: 'var(--text)', textDecoration: 'none', borderBottom: '1px solid var(--text)' }}>
+            Sign up
           </Link>
         </div>
       </form>
