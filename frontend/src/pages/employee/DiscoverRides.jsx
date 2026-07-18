@@ -82,8 +82,41 @@ const DiscoverRides = () => {
               {loading ? 'Searching...' : <><Search className="w-5 h-5 mr-2" /> Search</>}
             </button>
           </form>
+          
+          <div className="mt-4 flex items-center">
+            <input type="checkbox" id="searchRecurring" className="w-4 h-4 text-primary-600 bg-slate-100/50 border-slate-300/50 rounded focus:ring-primary-500" />
+            <label htmlFor="searchRecurring" className="ml-2 text-sm font-medium text-white/90">
+              Show only Recurring Rides (Daily Commutes)
+            </label>
+          </div>
         </div>
       </div>
+
+      {/* Calculated Route Confirmation (Appears when both locations are searched) */}
+      {searchParams.source.length > 2 && searchParams.destination.length > 2 && (
+        <div className="card p-6 mt-2 border-2 border-primary-100 dark:border-primary-900/30">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Calculated Route</h3>
+          
+          <div className="h-32 bg-slate-200 dark:bg-slate-800 relative w-full flex items-center justify-center rounded-xl overflow-hidden shadow-inner">
+            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            
+            <div className="relative w-full max-w-2xl mx-auto h-24 flex items-center justify-between px-8 mt-2">
+              <div className="relative flex flex-col items-center">
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase absolute -top-6 whitespace-nowrap bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded shadow-sm">{searchParams.source}</div>
+                <div className="w-4 h-4 bg-primary-600 rounded-full z-10 ring-4 ring-primary-200"></div>
+              </div>
+              
+              <div className="flex-1 h-1 bg-primary-300 dark:bg-primary-700/50 relative overflow-hidden mx-2 border-t-2 border-dashed border-primary-500">
+              </div>
+              
+              <div className="relative flex flex-col items-center">
+                <div className="text-xs font-bold text-red-600 dark:text-red-400 uppercase absolute -top-8 text-center whitespace-nowrap bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded shadow-sm">{searchParams.destination}</div>
+                <MapPin className="text-red-500 w-6 h-6 z-10 -mt-2" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Results */}
       <div>

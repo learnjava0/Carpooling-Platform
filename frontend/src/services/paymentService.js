@@ -11,6 +11,21 @@ export const paymentService = {
     return response.data;
   },
 
+  getWalletBalance: async () => {
+    const response = await api.get('/payments/wallet');
+    return response.data;
+  },
+
+  rechargeWallet: async (amount) => {
+    const response = await api.post('/payments/wallet/recharge', { amount, paymentMethod: 'CARD' });
+    return response.data;
+  },
+
+  payForTrip: async (tripId, paymentMethod) => {
+    const response = await api.post('/payments/trip/pay', { tripId, paymentMethod });
+    return response.data;
+  },
+
   openRazorpayWidget: (orderData, user, onSuccess, onError) => {
     const options = {
       key: 'rzp_test_TEtkcWeUnkc6xQ', // Provided Razorpay Key

@@ -52,6 +52,17 @@ const MyTrips = () => {
     }
   };
 
+  const handleOfflinePayment = async (tripId, method) => {
+    setPaymentStatus({ tripId, status: 'processing', message: '' });
+    try {
+      await paymentService.payForTrip(tripId, method);
+      setPaymentStatus({ tripId, status: 'success', message: `Successfully paid via ${method}!` });
+      fetchTrips();
+    } catch (err) {
+      setPaymentStatus({ tripId, status: 'error', message: err.response?.data?.message || `Failed to process ${method} payment.` });
+    }
+  };
+
   if (loading) return <div className="flex justify-center p-12"><RefreshCw className="w-8 h-8 text-primary-500 animate-spin" /></div>;
 
   return (
@@ -122,14 +133,15 @@ const MyTrips = () => {
                   <CheckCircle2 className="w-5 h-5 mr-2" /> Paid
                 </div>
               ) : trip.status === 'COMPLETED' ? (
-                <button 
-                  onClick={() => handlePayment(trip)}
-                  disabled={paymentStatus.tripId === trip.id && paymentStatus.status === 'processing'}
-                  className="w-full btn-primary py-2.5 flex justify-center items-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  {paymentStatus.tripId === trip.id && paymentStatus.status === 'processing' ? 'Processing...' : 'Pay with Razorpay'}
-                </button>
+                <div className="space-y-3">
+                  <div className="text-xs font-semibold text-slate-500 uppercase">Select Payment Method</div>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button onClick={() => handleOfflinePayment(trip.id, 'WALLET')} className="border border-slate-200 dark:border-slate-700 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">Wallet</button>
+                    <button onClick={() => handleOfflinePayment(trip.id, 'UPI')} className="border border-slate-200 dark:border-slate-700 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">UPI</button>
+                    <button onClick={() => handlePayment(trip)} className="border border-slate-200 dark:border-slate-700 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition text-primary-600">Card (Razorpay)</button>
+                    <button onClick={() => handleOfflinePayment(trip.id, 'CASH')} className="border border-slate-200 dark:border-slate-700 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">Cash</button>
+                  </div>
+                </div>
               ) : trip.status === 'BOOKED' ? (
                 <button 
                   onClick={async () => {

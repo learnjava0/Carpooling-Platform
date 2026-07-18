@@ -12,7 +12,10 @@ import ActiveRides from './pages/employee/ActiveRides';
 import PublishRide from './pages/employee/PublishRide';
 import MyVehicles from './pages/employee/MyVehicles';
 import Profile from './pages/employee/Profile';
+import Settings from './pages/employee/Settings';
+import Wallet from './pages/employee/Wallet';
 import LiveTracking from './pages/employee/LiveTracking';
+import SplashScreen from './pages/SplashScreen';
 // Placeholders for remaining features
 const ManageUsers = () => <div className="p-8"><h1>Manage Users (Coming Soon)</h1></div>;
 
@@ -47,7 +50,8 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<RoleBasedRedirect />} />
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/redirect" element={<RoleBasedRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
@@ -73,6 +77,8 @@ function App() {
             <Route path="vehicles" element={<MyVehicles />} />
             <Route path="profile" element={<Profile />} />
             <Route path="track" element={<LiveTracking />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="wallet" element={<Wallet />} />
           </Route>
         </Routes>
       </BrowserRouter>

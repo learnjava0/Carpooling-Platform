@@ -38,12 +38,12 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .active(true)
                         .build()));
 
-        createUserIfNotFound("admin@acme.com", "Admin", "User", Role.ADMIN, company, false);
-        User driver = createUserIfNotFound("driver@acme.com", "Driver", "John", Role.EMPLOYEE, company, true);
-        createUserIfNotFound("passenger@acme.com", "Passenger", "Jane", Role.EMPLOYEE, company, false);
+        createUserIfNotFound("admin@acme.com", "Admin", "User", Role.ADMIN, company, false, "+917820022627");
+        User driver = createUserIfNotFound("driver@acme.com", "Driver", "John", Role.EMPLOYEE, company, true, "+917895669918");
+        createUserIfNotFound("passenger@acme.com", "Passenger", "Jane", Role.EMPLOYEE, company, false, "+919484844775");
     }
 
-    private User createUserIfNotFound(String email, String firstName, String lastName, Role role, Company company, boolean createVehicle) {
+    private User createUserIfNotFound(String email, String firstName, String lastName, Role role, Company company, boolean createVehicle, String phoneNumber) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             return existingUser.get();
@@ -54,7 +54,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .lastName(lastName)
                 .email(email)
                 .password(passwordEncoder.encode("password123"))
-                .phoneNumber("1234567890")
+                .phoneNumber(phoneNumber)
                 .role(role)
                 .company(company)
                 .build();

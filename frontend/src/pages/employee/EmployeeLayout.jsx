@@ -18,7 +18,7 @@ const EmployeeLayout = () => {
     { name: 'Active Rides', path: '/employee/active-rides', end: false, icon: CarFront },
     { name: 'Publish Ride', path: '/employee/publish', end: false, icon: PlusCircle },
     { name: 'My Vehicles', path: '/employee/vehicles', end: false, icon: Car },
-    { name: 'Profile & Settings', path: '/employee/profile', end: false, icon: Settings },
+    { name: 'Settings', path: '/employee/settings', end: false, icon: Settings },
   ];
 
   return (

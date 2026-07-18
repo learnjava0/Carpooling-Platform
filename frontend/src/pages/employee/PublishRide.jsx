@@ -122,6 +122,13 @@ const PublishRide = () => {
               </div>
             </div>
           </div>
+
+          <div className="flex items-center mt-2">
+            <input type="checkbox" id="recurringRide" name="isRecurring" className="w-4 h-4 text-primary-600 bg-slate-100 border-slate-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600" />
+            <label htmlFor="recurringRide" className="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Set as a Recurring Ride (Daily Commute)
+            </label>
+          </div>
         </div>
 
         <button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white font-medium py-3 rounded-xl shadow-lg shadow-green-500/30 flex items-center justify-center transition-all">
@@ -133,6 +140,44 @@ const PublishRide = () => {
           )}
         </button>
       </form>
+
+      {/* Calculated Route Confirmation (Appears when both locations are entered) */}
+      {formData.pickupLocation.length > 2 && formData.destination.length > 2 && (
+        <div className="card p-6 mt-6 border-2 border-primary-100 dark:border-primary-900/30">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Calculated Route Confirmation</h3>
+          
+          <div className="h-48 bg-slate-200 dark:bg-slate-800 relative w-full flex items-center justify-center rounded-xl overflow-hidden shadow-inner">
+            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            
+            <div className="relative w-full max-w-md mx-auto h-24 flex items-center justify-between px-8 mt-2">
+              <div className="relative flex flex-col items-center">
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase absolute -top-6 whitespace-nowrap bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded shadow-sm">{formData.pickupLocation}</div>
+                <div className="w-4 h-4 bg-primary-600 rounded-full z-10 ring-4 ring-primary-200"></div>
+              </div>
+              
+              <div className="flex-1 h-1 bg-primary-300 dark:bg-primary-700/50 relative overflow-hidden mx-2 border-t-2 border-dashed border-primary-500">
+              </div>
+              
+              <div className="relative flex flex-col items-center">
+                <div className="text-xs font-bold text-red-600 dark:text-red-400 uppercase absolute -top-8 text-center whitespace-nowrap bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded shadow-sm">{formData.destination}</div>
+                <MapPin className="text-red-500 w-6 h-6 z-10 -mt-2" />
+              </div>
+            </div>
+
+            <div className="absolute bottom-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm p-2 rounded-lg shadow flex items-center space-x-3">
+              <div>
+                <div className="text-[10px] text-slate-500 font-semibold uppercase">Est. Distance</div>
+                <div className="text-sm font-bold text-slate-800 dark:text-white">12.5 km</div>
+              </div>
+              <div className="w-px h-6 bg-slate-200 dark:bg-slate-700"></div>
+              <div>
+                <div className="text-[10px] text-slate-500 font-semibold uppercase">Est. Time</div>
+                <div className="text-sm font-bold text-primary-600">35 mins</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
