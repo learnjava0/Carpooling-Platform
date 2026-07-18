@@ -1,25 +1,25 @@
-import { Clock, Users, MapPin, RefreshCw } from 'lucide-react';
+import { Clock, Users, RefreshCw } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import RouteMap from '../../components/RouteMap';
 import AppShell from '../../layouts/AppShell';
 
 const mockRides = [
-  { id: 1, driver: 'Raj Patel', vehicle: 'Swift Dzire', plate: 'GJ01AB1234', rating: 4.8, time: '01:00 PM', seats: 4, fare: 120, from: 'ISKCON', to: 'Infinity' },
-  { id: 2, driver: 'Krishna Singh', vehicle: 'Alto 800', plate: 'GJ01AB5678', rating: 4.6, time: '05:00 PM', seats: 2, fare: 120, from: 'ISKCON', to: 'Infinity' },
-  { id: 3, driver: 'Sneha Mehta', vehicle: 'Kia Seltos', plate: 'GJ01CD9012', rating: 4.9, time: '09:15 AM', seats: 1, fare: 150, from: 'BTM Layout', to: 'Manyata Tech' },
+  { id: 1, driver: 'Raj Patel',     vehicle: 'Swift Dzire', plate: 'GJ01AB1234', rating: 4.8, time: '01:00 PM', seats: 4, fare: 120, from: 'ISKCON',    to: 'Infinity' },
+  { id: 2, driver: 'Krishna Singh', vehicle: 'Alto 800',    plate: 'GJ01AB5678', rating: 4.6, time: '05:00 PM', seats: 2, fare: 120, from: 'ISKCON',    to: 'Infinity' },
+  { id: 3, driver: 'Sneha Mehta',   vehicle: 'Kia Seltos',  plate: 'GJ01CD9012', rating: 4.9, time: '09:15 AM', seats: 1, fare: 150, from: 'BTM Layout', to: 'Manyata Tech' },
 ];
 
 export default function AvailableRides() {
   const navigate = useNavigate();
   const location = useLocation();
-  const rideDetails = location.state?.rideDetails;
+  const rd = location.state?.rideDetails;
 
   return (
     <AppShell title="Available Rides" showBack
-      rightActions={
-        <button className="btn btn-ghost btn-sm"><RefreshCw size={14} /> Refresh</button>
-      }
+      rightActions={<button className="btn btn-ghost btn-sm"><RefreshCw size={14} /> Refresh</button>}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+
         {/* Ride list */}
         <div>
           <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', marginBottom: 20 }}>
@@ -70,24 +70,33 @@ export default function AvailableRides() {
           ))}
         </div>
 
-        {/* Sidebar summary */}
+        {/* Sidebar: map + search summary */}
         <div>
-          {rideDetails && (
+          <div className="card" style={{ marginBottom: 16 }}>
+            <p className="section-label">Route Map</p>
+            <RouteMap
+              from={rd?.pickupLocation || 'ISKCON'}
+              to={rd?.destination || 'Infinity'}
+              height="220px"
+            />
+          </div>
+
+          {rd && (
             <div className="card" style={{ marginBottom: 16 }}>
               <p className="section-label">Your Search</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <div className="dot-from" />
-                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{rideDetails.pickupLocation || '—'}</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{rd.pickupLocation}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <div className="dot-to" />
-                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{rideDetails.destination || '—'}</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{rd.destination}</span>
                 </div>
-                {rideDetails.travelDate && <span className="badge badge-muted">📅 {rideDetails.travelDate}</span>}
-                {rideDetails.travelTime && <span className="badge badge-muted">🕐 {rideDetails.travelTime}</span>}
+                {rd.travelDate && <span className="badge badge-muted">📅 {rd.travelDate}</span>}
+                {rd.travelTime && <span className="badge badge-muted">🕐 {rd.travelTime}</span>}
               </div>
-              <button className="btn btn-ghost btn-full" style={{ marginTop: 14 }} onClick={() => navigate('/find-ride')}>
+              <button className="btn btn-ghost" style={{ width: '100%', marginTop: 12 }} onClick={() => navigate('/find-ride')}>
                 Edit Search
               </button>
             </div>
@@ -95,7 +104,7 @@ export default function AvailableRides() {
 
           <div className="card" style={{ background: 'var(--brand-dim)', borderColor: 'rgba(244,176,0,0.2)' }}>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.65 }}>
-              <strong style={{ color: 'var(--brand)' }}>Book quickly</strong> — seats fill up fast during peak hours. The fare is shared equally among all passengers.
+              <strong style={{ color: 'var(--brand)' }}>Book quickly</strong> — seats fill up fast during peak hours.
             </p>
           </div>
         </div>

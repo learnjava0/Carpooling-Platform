@@ -1,5 +1,3 @@
-import axiosInstance from './axiosInstance';
-
 export const authService = {
   async login(credentials) {
     // Hardcoded dev bypass for the hackathon
@@ -20,13 +18,13 @@ export const authService = {
     throw new Error("Invalid username or password");
   },
 
-  async register(payload) {
+  async register() {
     return {
       message: 'Registration successful via mock.'
     };
   },
 
-  async refreshToken(refreshToken) {
+  async refreshToken() {
     return {
       accessToken: 'mock_access_token_123',
       refreshToken: 'mock_refresh_token_123',

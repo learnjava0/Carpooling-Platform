@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MapPin, Calendar, Clock, Car, ChevronRight, CheckCircle2, ArrowLeftRight } from 'lucide-react';
 import AppShell from '../../layouts/AppShell';
+import RouteMap from '../../components/RouteMap';
 
 export default function OfferRide() {
   const [step, setStep] = useState(1);
@@ -9,9 +10,9 @@ export default function OfferRide() {
 
   return (
     <AppShell title="Offer a Ride">
-      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto' }}>
         {/* Stepper */}
-        <div className="stepper" style={{ marginBottom: 28 }}>
+        <div className="stepper">
           {['Route', 'Details', 'Review & Publish'].map((label, i) => {
             const n = i + 1;
             const cls = step > n ? 'done' : step === n ? 'active' : '';
@@ -24,8 +25,9 @@ export default function OfferRide() {
           })}
         </div>
 
+        {/* ── Step 1: Route ── */}
         {step === 1 && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div className="card">
               <p className="section-label">Where are you going?</p>
               <div className="stack">
@@ -49,26 +51,23 @@ export default function OfferRide() {
                   </div>
                 </div>
               </div>
-              <button className="btn btn-primary btn-full" style={{ marginTop: 24 }} onClick={() => setStep(2)}>
+              <button className="btn btn-primary" style={{ width: '100%', marginTop: 24 }} onClick={() => setStep(2)}>
                 Continue <ChevronRight size={16} />
               </button>
             </div>
 
             <div className="card">
               <p className="section-label">Route Preview</p>
-              <div className="map-placeholder" style={{ height: 200 }}>
-                <div className="map-route-line" />
-                <MapPin size={28} style={{ opacity: 0.3 }} />
-                <span style={{ fontSize: '0.78rem' }}>Enter locations to preview</span>
-              </div>
+              <RouteMap from={form.from} to={form.to} height="260px" />
             </div>
           </div>
         )}
 
+        {/* ── Step 2: Details ── */}
         {step === 2 && (
-          <div className="card">
+          <div className="card" style={{ maxWidth: 600 }}>
             <p className="section-label">Trip Details</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
               <div>
                 <div className="field-label" style={{ marginBottom: 6 }}>Date</div>
                 <div className="input-shell"><Calendar size={16} /><input type="date" value={form.date} onChange={e => set('date', e.target.value)} /></div>
@@ -92,7 +91,7 @@ export default function OfferRide() {
                 <div className="input-shell"><input type="number" min="1" max="4" value={form.seats} onChange={e => set('seats', +e.target.value)} /></div>
               </div>
               <div>
-                <div className="field-label" style={{ marginBottom: 6 }}>Price per Seat (₹)</div>
+                <div className="field-label" style={{ marginBottom: 6 }}>Price / Seat (₹)</div>
                 <div className="input-shell">
                   <span style={{ fontWeight: 700, color: 'var(--brand)' }}>₹</span>
                   <input type="number" min="0" value={form.price} onChange={e => set('price', +e.target.value)} />
@@ -101,15 +100,24 @@ export default function OfferRide() {
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>
-              <button className="btn btn-primary" onClick={() => setStep(3)} style={{ flex: 1 }}>Review <ChevronRight size={16} /></button>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => setStep(3)}>Review <ChevronRight size={16} /></button>
             </div>
           </div>
         )}
 
+        {/* ── Step 3: Review ── */}
         {step === 3 && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+            {/* Map */}
             <div className="card">
-              <p className="section-label">Route Summary</p>
+              <p className="section-label">Your Route on Map</p>
+              <RouteMap from={form.from} to={form.to} height="300px" />
+            </div>
+
+            {/* Summary + publish */}
+            <div className="card">
+              <p className="section-label">Summary</p>
+
               <div className="route-visual" style={{ marginBottom: 20 }}>
                 <div className="route-dots">
                   <div className="dot-from" />
@@ -121,7 +129,8 @@ export default function OfferRide() {
                   <div><div className="route-label-sub">To</div><div className="route-label-to">{form.to || '—'}</div></div>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
                 {[{ k: 'Date', v: form.date || '—' }, { k: 'Time', v: form.time || '—' }, { k: 'Seats', v: form.seats }, { k: 'Price/Seat', v: `₹${form.price}` }].map(({ k, v }) => (
                   <div key={k} style={{ background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 12px' }}>
                     <div style={{ fontSize: '0.65rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{k}</div>
@@ -129,21 +138,16 @@ export default function OfferRide() {
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="card">
-              <p className="section-label">Publish Details</p>
-              <div style={{ padding: '12px 14px', background: 'var(--accent-dim)', borderRadius: 10, marginBottom: 16, fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}>
+              <div style={{ padding: '12px 14px', background: 'var(--accent-dim)', borderRadius: 10, marginBottom: 18, fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}>
                 ✓ ₹{form.price} / seat · {form.seats} seats available
               </div>
-              <p style={{ fontSize: '0.83rem', color: 'var(--text-2)', lineHeight: 1.65, marginBottom: 20 }}>
-                Your ride will be visible to colleagues on the same route. They can book available seats directly.
-              </p>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button className="btn btn-primary btn-full btn-lg" onClick={() => { alert('Ride published!'); }}>
+                <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={() => alert('Ride published!')}>
                   Publish Ride
                 </button>
-                <button className="btn btn-ghost btn-full" onClick={() => setStep(2)}>← Edit Details</button>
+                <button className="btn btn-ghost" style={{ width: '100%' }} onClick={() => setStep(2)}>← Edit Details</button>
               </div>
             </div>
           </div>
