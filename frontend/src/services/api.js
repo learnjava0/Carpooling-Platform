@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * api.js — centralised service layer for all backend domains
  * All calls use the axios instance that auto-attaches the JWT.
@@ -112,3 +113,27 @@ export const updateLiveLocation = (tripId, payload) =>
 
 export const getLiveLocation = (tripId) =>
   axiosInstance.get(`/tracking/${tripId}/location`).then((r) => r.data);
+=======
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8080/api', // Spring Boot backend default port
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor for adding the auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export default api;
+>>>>>>> origin/backend_carpooling

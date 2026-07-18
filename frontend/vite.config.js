@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import path from "path";
 import { fileURLToPath } from 'url';
 import { defineConfig } from "vite";
@@ -18,3 +19,16 @@ export default defineConfig({
     port: 5173,
   },
 });
+=======
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+})
+>>>>>>> origin/backend_carpooling
