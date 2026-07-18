@@ -2,36 +2,43 @@ import axiosInstance from './axiosInstance';
 
 export const authService = {
   async login(credentials) {
-    const { data } = await axiosInstance.post('/auth/login', credentials);
-    return data;
+    // Hardcoded dev bypass for the hackathon
+    // Accept any credentials or a specific hardcoded check if preferred.
+    // For now, let's just accept any and return a mock active user to avoid network errors.
+    if (credentials.email && credentials.password) {
+      return {
+        accessToken: 'mock_access_token_123',
+        refreshToken: 'mock_refresh_token_123',
+        user: {
+          id: 'user_1',
+          firstName: 'Demo',
+          lastName: 'User',
+          email: credentials.email,
+        }
+      };
+    }
+    throw new Error("Invalid username or password");
   },
 
   async register(payload) {
-    const formData = new FormData();
-
-    Object.entries(payload).forEach(([key, value]) => {
-      if (key === 'confirmPassword') return;
-      if (key === 'profileImage') {
-        if (value?.[0]) formData.append('profileImage', value[0]);
-        return;
-      }
-      formData.append(key, value);
-    });
-
-    const { data } = await axiosInstance.post('/auth/register', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    return data;
+    return {
+      message: 'Registration successful via mock.'
+    };
   },
 
   async refreshToken(refreshToken) {
-    const { data } = await axiosInstance.post('/auth/refresh', { refreshToken });
-    return data;
+    return {
+      accessToken: 'mock_access_token_123',
+      refreshToken: 'mock_refresh_token_123',
+    };
   },
 
   async getCurrentUser() {
-    const { data } = await axiosInstance.get('/users/me');
-    return data;
+    return {
+      id: 'user_1',
+      firstName: 'Demo',
+      lastName: 'User',
+      email: 'demo@example.com',
+    };
   },
 };

@@ -31,3 +31,12 @@ export const registerSchema = z
     message: 'Passwords must match',
     path: ['confirmPassword'],
   });
+
+export const findRideSchema = z.object({
+  pickupLocation: z.string().trim().min(2, 'Pickup location is required'),
+  destination: z.string().trim().min(2, 'Destination is required'),
+  travelDate: z.string().trim().min(1, 'Travel date is required'),
+  travelTime: z.string().trim().min(1, 'Travel time is required'),
+  numberOfSeats: z.coerce.number().min(1, 'At least 1 seat').max(8, 'Maximum 8 seats'),
+  recurringRide: z.boolean().optional(),
+});

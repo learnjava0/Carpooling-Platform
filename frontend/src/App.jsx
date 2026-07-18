@@ -1,12 +1,13 @@
-import { LogOut } from 'lucide-react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Logo from './components/Logo';
-import { useAuth } from './hooks/useAuth';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Splash from './pages/auth/Splash';
 import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
+import Dashboard from './pages/dashboard/Dashboard';
+import FindRide from './pages/ride/FindRide';
+import RouteConfirmation from './pages/ride/RouteConfirmation';
+import AvailableRides from './pages/ride/AvailableRides';
 
 function App() {
   return (
@@ -28,40 +29,53 @@ function App() {
           </PublicRoute>
         }
       />
+      
+      {/* Protected Phase 1 & 2 Routes */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <DashboardPlaceholder />
+            <Dashboard />
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/find-ride"
+        element={
+          <ProtectedRoute>
+            <FindRide />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/route-confirmation"
+        element={
+          <ProtectedRoute>
+            <RouteConfirmation />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/available-rides"
+        element={
+          <ProtectedRoute>
+            <AvailableRides />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Placeholder for Offer Ride (Phase 3) */}
+      <Route
+        path="/offer-ride"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate replace to="/" />} />
     </Routes>
-  );
-}
-
-function DashboardPlaceholder() {
-  const { logout, user } = useAuth();
-
-  return (
-    <main className="dashboard-page">
-      <nav className="dashboard-nav">
-        <Logo />
-        <button className="secondary-button" type="button" onClick={logout}>
-          <LogOut size={16} aria-hidden="true" />
-          Logout
-        </button>
-      </nav>
-      <section className="dashboard-card">
-        <p className="eyebrow">Authentication Complete</p>
-        <h1>Welcome{user?.firstName ? `, ${user.firstName}` : ''}</h1>
-        <p>
-          You are signed in. The protected dashboard route is ready for the next
-          frontend module.
-        </p>
-      </section>
-    </main>
   );
 }
 
