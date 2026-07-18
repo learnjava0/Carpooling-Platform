@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+import com.odoohackathon.odoohackathon.domain.trip.entity.Trip;
 
 @Entity
 @Table(name = "rides")
@@ -41,6 +44,10 @@ public class Ride {
 
     @Column(nullable = false)
     private BigDecimal farePerSeat;
+
+    @OneToMany(mappedBy = "ride", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Trip> trips = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
     @Builder.Default

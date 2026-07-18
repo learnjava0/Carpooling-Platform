@@ -41,7 +41,7 @@ const DiscoverRides = () => {
   return (
     <div className="space-y-8">
       {/* Search Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-secondary-600 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-[#171a20] dark:bg-white rounded-md p-8 sm:p-12 text-white dark:text-[#171a20] shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
         
         <div className="relative z-10 max-w-3xl">
@@ -126,12 +126,13 @@ const DiscoverRides = () => {
           {rides.map(ride => (
             <div key={ride.id} className="card hover:shadow-lg transition-shadow group">
               <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-lg font-bold text-slate-700 dark:text-slate-300">
-                    {ride.driver?.firstName?.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">{ride.driver?.firstName} {ride.driver?.lastName}</h3>
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 rounded-full bg-[#171a20] text-white flex items-center justify-center font-bold text-xs mr-3">
+                      {ride.driver?.firstName?.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Offered by</div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">{ride.driver?.firstName} {ride.driver?.lastName}</h3>
                     <div className="flex items-center text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                       <ShieldCheck className="w-3 h-3 mr-1" />
                       Verified Colleague
@@ -179,7 +180,7 @@ const DiscoverRides = () => {
                 
                 {bookingStatus.id === ride.id && bookingStatus.status === 'success' ? (
                   <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-semibold flex items-center">
-                    Booked! OTP: {bookingStatus.otp}
+                    Pending Approval... OTP for Travel: {bookingStatus.otp}
                   </div>
                 ) : (
                   <button 

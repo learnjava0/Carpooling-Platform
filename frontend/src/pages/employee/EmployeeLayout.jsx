@@ -26,10 +26,10 @@ const EmployeeLayout = () => {
       {/* Top Navigation */}
       <header className="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 sm:px-8 shrink-0 z-20 shadow-sm">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-            <Car className="text-white w-4 h-4" />
+          <div className="w-8 h-8 bg-[#171a20] dark:bg-white rounded flex items-center justify-center">
+            <Car className="text-white dark:text-[#171a20] w-4 h-4" />
           </div>
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600">
+          <span className="text-xl font-bold text-[#171a20] dark:text-white">
             RideConnect
           </span>
         </div>

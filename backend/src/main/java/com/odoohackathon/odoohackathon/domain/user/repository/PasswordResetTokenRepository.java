@@ -1,5 +1,6 @@
 package com.odoohackathon.odoohackathon.domain.user.repository;
 
+import com.odoohackathon.odoohackathon.domain.user.entity.PasswordResetToken;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -7,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByEmail(String email);
-    boolean existsByEmail(String email);
-    java.util.List<User> findByCompanyId(Long companyId);
+public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
+    Optional<PasswordResetToken> findByToken(String token);
+    void deleteByUser(User user);
 }

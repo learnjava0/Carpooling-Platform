@@ -9,4 +9,6 @@ public class RazorpayVerifyRequest {
     private String razorpaySignature;
     private Long tripId;
     private String paymentMethod;
+    private String purpose;
+    private java.math.BigDecimal amount;
 }

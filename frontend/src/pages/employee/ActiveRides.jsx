@@ -15,7 +15,9 @@ const ActiveRides = () => {
     setLoading(true);
     try {
       const data = await rideService.getDriverRides();
-      setRides(data);
+      // Filter out rides whose departure time is in the past, or are COMPLETED
+      const activeData = data.filter(r => new Date(r.departureTime) >= new Date() && r.status !== 'COMPLETED');
+      setRides(activeData);
     } catch (err) {
       console.error(err);
       setRides([]);
@@ -56,13 +58,35 @@ const ActiveRides = () => {
     }
   };
 
+  const handleAcceptTrip = async (tripId) => {
+    setStatus({ id: tripId, message: 'Accepting...', type: 'processing' });
+    try {
+      await tripService.acceptTrip(tripId);
+      setStatus({ id: tripId, message: 'Trip accepted! OTP sent to passenger.', type: 'success' });
+      fetchRides();
+    } catch (err) {
+      setStatus({ id: tripId, message: 'Failed to accept trip', type: 'error' });
+    }
+  };
+
+  const handleRejectTrip = async (tripId) => {
+    setStatus({ id: tripId, message: 'Rejecting...', type: 'processing' });
+    try {
+      await tripService.rejectTrip(tripId);
+      setStatus({ id: tripId, message: 'Trip rejected.', type: 'success' });
+      fetchRides();
+    } catch (err) {
+      setStatus({ id: tripId, message: 'Failed to reject trip', type: 'error' });
+    }
+  };
+
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div></div>;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Active Rides</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your published rides and verify passengers.</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your published rides and verify colleagues.</p>
       </div>
 
       <div className="space-y-6">
@@ -90,7 +114,7 @@ const ActiveRides = () => {
             <div className="p-6">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center">
                 <Users className="w-4 h-4 mr-2 text-slate-500" />
-                Passengers ({ride.trips?.length || 0})
+                Colleagues ({ride.trips?.length || 0})
               </h3>
 
               {ride.trips?.length === 0 ? (
@@ -115,7 +139,22 @@ const ActiveRides = () => {
                           </div>
                         )}
                         
-                        {trip.status === 'BOOKED' ? (
+                        {trip.status === 'PENDING' ? (
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => handleAcceptTrip(trip.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            >
+                              Accept
+                            </button>
+                            <button 
+                              onClick={() => handleRejectTrip(trip.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : trip.status === 'ACCEPTED' ? (
                           <div className="flex items-center space-x-2">
                             <input 
                               type="text" 
@@ -131,6 +170,16 @@ const ActiveRides = () => {
                             >
                               <Play className="w-4 h-4 mr-1.5" /> Start
                             </button>
+                            <button 
+                              onClick={() => navigate('/employee/track', { state: { trip } })}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+                            >
+                              <MapPin className="w-4 h-4 mr-1.5" /> Track
+                            </button>
+                          </div>
+                        ) : trip.status === 'REJECTED' ? (
+                          <div className="flex items-center text-red-600 font-medium text-sm px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                            Rejected
                           </div>
                         ) : trip.status === 'STARTED' ? (
                           <div className="flex space-x-2">

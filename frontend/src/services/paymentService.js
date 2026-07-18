@@ -1,13 +1,13 @@
 import api from './api';
 
 export const paymentService = {
-  createOrder: async (tripId) => {
-    const response = await api.post(`/payments/create-order?tripId=${tripId}`);
+  createOrder: async (amount) => {
+    const response = await api.post(`/payments/create-order?amount=${amount}`);
     return response.data;
   },
 
   verifyPayment: async (paymentData) => {
-    const response = await api.post('/payments/verify', paymentData);
+    const response = await api.post('/payments/verify-razorpay', paymentData);
     return response.data;
   },
 
@@ -17,6 +17,7 @@ export const paymentService = {
   },
 
   rechargeWallet: async (amount) => {
+    // This is the direct backend recharge bypass for now if needed, but Razorpay is preferred.
     const response = await api.post('/payments/wallet/recharge', { amount, paymentMethod: 'CARD' });
     return response.data;
   },
@@ -37,9 +38,13 @@ export const paymentService = {
       handler: async function (response) {
         try {
           const verificationResult = await paymentService.verifyPayment({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+            tripId: orderData.tripId,
+            purpose: orderData.purpose,
+            amount: orderData.amount,
+            paymentMethod: 'RAZORPAY'
           });
           onSuccess(verificationResult);
         } catch (error) {

@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.odoohackathon.odoohackathon.domain.trip.dto.TripDTO;
 
 @Data
 @Builder
@@ -22,4 +25,7 @@ public class RideDTO {
     private LocalDateTime departureTime;
     private int availableSeats;
     private BigDecimal farePerSeat;
+
+    @JsonIgnoreProperties("ride")
+    private List<TripDTO> trips;
 }

@@ -59,17 +59,54 @@ public class TripService {
                 .passenger(passenger)
                 .bookedSeats(request.getBookedSeats())
                 .totalFare(totalFare)
-                .status(TripStatus.BOOKED)
+                .status(TripStatus.PENDING)
                 .startOtp(otp)
                 .build();
 
         trip = tripRepository.save(trip);
 
-        if (passenger.getPhoneNumber() != null && !passenger.getPhoneNumber().isEmpty()) {
-            twilioService.sendOtpSms(passenger.getPhoneNumber(), otp);
+        return mapToDto(trip);
+    }
+
+    @Transactional
+    public TripDTO acceptTrip(Long tripId, String driverEmail) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        if (!trip.getRide().getDriver().getEmail().equals(driverEmail)) {
+            throw new IllegalArgumentException("Only the driver can accept the trip");
         }
 
+        if (trip.getStatus() != TripStatus.PENDING) {
+            throw new IllegalArgumentException("Can only accept PENDING trips");
+        }
+
+        trip.setStatus(TripStatus.ACCEPTED);
+        trip = tripRepository.save(trip);
+
         return mapToDto(trip);
+    }
+
+    @Transactional
+    public TripDTO rejectTrip(Long tripId, String driverEmail) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        if (!trip.getRide().getDriver().getEmail().equals(driverEmail)) {
+            throw new IllegalArgumentException("Only the driver can reject the trip");
+        }
+
+        if (trip.getStatus() != TripStatus.PENDING) {
+            throw new IllegalArgumentException("Can only reject PENDING trips");
+        }
+
+        // Restore seats since it's rejected
+        Ride ride = trip.getRide();
+        ride.setAvailableSeats(ride.getAvailableSeats() + trip.getBookedSeats());
+        rideRepository.save(ride);
+
+        trip.setStatus(TripStatus.REJECTED);
+        return mapToDto(tripRepository.save(trip));
     }
 
     public List<TripDTO> getPassengerTrips(String userEmail) {
@@ -105,6 +142,10 @@ public class TripService {
             throw new IllegalArgumentException("Only the driver can start the trip");
         }
 
+        if (trip.getStatus() != TripStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Only ACCEPTED trips can be started");
+        }
+
         if (trip.getStartOtp() == null || !trip.getStartOtp().equals(otp)) {
             throw new IllegalArgumentException("Invalid OTP");
         }
@@ -122,7 +163,7 @@ public class TripService {
             throw new IllegalArgumentException("Only the passenger who booked this trip can cancel it");
         }
 
-        if (trip.getStatus() != TripStatus.BOOKED) {
+        if (trip.getStatus() != TripStatus.PENDING && trip.getStatus() != TripStatus.ACCEPTED && trip.getStatus() != TripStatus.BOOKED) {
             throw new IllegalArgumentException("Cannot cancel a trip that is already started or completed");
         }
 
@@ -141,6 +182,7 @@ public class TripService {
                 .bookedSeats(trip.getBookedSeats())
                 .totalFare(trip.getTotalFare())
                 .status(trip.getStatus())
+                .startOtp(trip.getStartOtp())
                 .passenger(UserDTO.builder()
                         .id(trip.getPassenger().getId())
                         .firstName(trip.getPassenger().getFirstName())

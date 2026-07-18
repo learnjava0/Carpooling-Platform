@@ -10,7 +10,7 @@ const Settings = () => {
     { icon: <Car className="w-5 h-5" />, label: 'My Vehicle', action: () => navigate('/employee/vehicles') },
     { icon: <History className="w-5 h-5" />, label: 'Ride History', action: () => navigate('/employee/trips') },
     { icon: <CreditCard className="w-5 h-5" />, label: 'Payment Methods & Wallet', action: () => navigate('/employee/wallet') },
-    { icon: <MapPin className="w-5 h-5" />, label: 'Saved Places', action: () => alert('Manage your Home and Office locations here.') },
+    { icon: <MapPin className="w-5 h-5" />, label: 'Saved Places', action: () => navigate('/employee/saved-places') },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'Chat', action: () => alert('View your past communications.') },
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Help & Support', action: () => alert('Contact your enterprise administrator for carpooling support.') },
   ];

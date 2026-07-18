@@ -14,4 +14,5 @@ public class VehicleDTO {
     private String model;
     private String registrationNumber;
     private int seatingCapacity;
+    private Long userId;
 }

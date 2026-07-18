@@ -54,6 +54,24 @@ public class TripController {
         return ResponseEntity.ok(tripService.cancelTripAsPassenger(tripId, userEmail));
     }
 
+    @PostMapping("/{tripId}/accept")
+    public ResponseEntity<TripDTO> acceptTrip(
+            @PathVariable Long tripId,
+            Authentication authentication
+    ) {
+        String driverEmail = authentication.getName();
+        return ResponseEntity.ok(tripService.acceptTrip(tripId, driverEmail));
+    }
+
+    @PostMapping("/{tripId}/reject")
+    public ResponseEntity<TripDTO> rejectTrip(
+            @PathVariable Long tripId,
+            Authentication authentication
+    ) {
+        String driverEmail = authentication.getName();
+        return ResponseEntity.ok(tripService.rejectTrip(tripId, driverEmail));
+    }
+
     @PostMapping("/{tripId}/verify-otp")
     public ResponseEntity<TripDTO> verifyOtpAndStart(
             @PathVariable Long tripId,

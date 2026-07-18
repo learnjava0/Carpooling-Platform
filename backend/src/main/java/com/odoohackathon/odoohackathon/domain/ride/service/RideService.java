@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.odoohackathon.odoohackathon.domain.trip.dto.TripDTO;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -94,6 +96,19 @@ public class RideService {
                 .departureTime(ride.getDepartureTime())
                 .availableSeats(ride.getAvailableSeats())
                 .farePerSeat(ride.getFarePerSeat())
+                .trips(ride.getTrips() != null ? ride.getTrips().stream().map(trip -> TripDTO.builder()
+                        .id(trip.getId())
+                        .passenger(UserDTO.builder()
+                                .id(trip.getPassenger().getId())
+                                .firstName(trip.getPassenger().getFirstName())
+                                .lastName(trip.getPassenger().getLastName())
+                                .email(trip.getPassenger().getEmail())
+                                .phoneNumber(trip.getPassenger().getPhoneNumber())
+                                .build())
+                        .bookedSeats(trip.getBookedSeats())
+                        .totalFare(trip.getTotalFare())
+                        .status(trip.getStatus())
+                        .build()).collect(Collectors.toList()) : Collections.emptyList())
                 .build();
     }
 }

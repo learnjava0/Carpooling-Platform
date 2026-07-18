@@ -47,10 +47,10 @@ const Login = () => {
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex w-1/2 flex-col justify-between p-16 relative z-10 border-r border-slate-200 dark:border-slate-800 bg-white/30 dark:bg-slate-900/30 backdrop-blur-3xl">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
-            <Car className="text-white w-7 h-7" />
+          <div className="w-12 h-12 bg-[#171a20] dark:bg-white rounded-xl flex items-center justify-center">
+            <Car className="text-white dark:text-[#171a20] w-7 h-7" />
           </div>
-          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400">
+          <span className="text-2xl font-bold text-[#171a20] dark:text-white">
             RideConnect
           </span>
         </div>
@@ -74,10 +74,11 @@ const Login = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative z-10">
         <div className="w-full max-w-md glass-panel p-8 sm:p-12 rounded-3xl">
           <div className="mb-10 text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start space-x-3 mb-6 lg:hidden">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
-                <Car className="text-white w-6 h-6" />
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-10 h-10 bg-[#171a20] dark:bg-white rounded-xl flex items-center justify-center">
+                <Car className="text-white dark:text-[#171a20] w-6 h-6" />
               </div>
+              <span className="text-xl font-bold text-[#171a20] dark:text-white">RideConnect</span>
             </div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Welcome Back</h2>
             <p className="text-slate-500 dark:text-slate-400">Enter your credentials to access your account.</p>

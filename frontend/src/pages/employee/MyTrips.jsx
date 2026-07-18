@@ -34,7 +34,10 @@ const MyTrips = () => {
   const handlePayment = async (trip) => {
     setPaymentStatus({ tripId: trip.id, status: 'processing', message: '' });
     try {
-      const orderData = await paymentService.createOrder(trip.id);
+      const amountToPay = trip.totalFare || trip.ride?.farePerSeat || 0;
+      const orderData = await paymentService.createOrder(amountToPay);
+      orderData.purpose = 'TRIP';
+      orderData.tripId = trip.id;
       
       paymentService.openRazorpayWidget(
         orderData, 
@@ -77,13 +80,16 @@ const MyTrips = () => {
           <div key={trip.id} className="card p-6 flex flex-col h-full">
             <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
               <div>
-                <div className="font-semibold text-slate-900 dark:text-white">Driver: {trip.ride?.driver?.firstName}</div>
+                <div className="font-semibold text-slate-900 dark:text-white">Host: {trip.ride?.driver?.firstName}</div>
                 <div className="text-sm font-medium mt-1">
                   Status: 
                   <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
                     trip.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                    trip.status === 'STARTED' ? 'bg-blue-100 text-blue-700' :
-                    trip.status === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'
+                    trip.status === 'STARTED' ? 'bg-indigo-100 text-indigo-700' :
+                    trip.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-700' :
+                    trip.status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
+                    trip.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                    trip.status === 'BOOKED' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-700'
                   }`}>
                     {trip.status}
                   </span>
@@ -91,7 +97,7 @@ const MyTrips = () => {
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold text-primary-600 dark:text-primary-400">₹{trip.ride?.farePerSeat}</div>
-                {trip.status === 'BOOKED' && trip.startOtp && (
+                {(trip.status === 'ACCEPTED' || trip.status === 'PENDING') && trip.startOtp && (
                   <div className="mt-1 text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                     OTP: {trip.startOtp}
                   </div>
@@ -128,7 +134,7 @@ const MyTrips = () => {
             )}
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 mt-auto">
-              {trip.paymentStatus === 'PAID' ? (
+              {trip.status === 'PAYMENT_COMPLETED' ? (
                 <div className="flex justify-center items-center text-green-600 font-medium py-2">
                   <CheckCircle2 className="w-5 h-5 mr-2" /> Paid
                 </div>
@@ -142,7 +148,14 @@ const MyTrips = () => {
                     <button onClick={() => handleOfflinePayment(trip.id, 'CASH')} className="border border-slate-200 dark:border-slate-700 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">Cash</button>
                   </div>
                 </div>
-              ) : trip.status === 'BOOKED' ? (
+              ) : (trip.status === 'STARTED' || trip.status === 'ACCEPTED') ? (
+                <button 
+                  onClick={() => navigate('/employee/track', { state: { trip } })}
+                  className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-2.5 rounded-lg flex justify-center items-center transition-colors font-medium text-sm"
+                >
+                  <MapPin className="w-4 h-4 mr-2" /> Track Ride
+                </button>
+              ) : (trip.status === 'BOOKED' || trip.status === 'PENDING') ? (
                 <button 
                   onClick={async () => {
                     if(window.confirm('Are you sure you want to cancel this trip?')) {

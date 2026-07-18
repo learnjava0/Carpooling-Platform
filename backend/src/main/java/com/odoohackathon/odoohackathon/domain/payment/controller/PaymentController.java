@@ -48,7 +48,20 @@ public class PaymentController {
             throw new IllegalArgumentException("Invalid Razorpay Signature");
         }
 
-        // If valid, process the payment as normal
+        if ("RECHARGE".equalsIgnoreCase(verifyRequest.getPurpose())) {
+            PaymentRequest rechargeReq = new PaymentRequest();
+            rechargeReq.setAmount(verifyRequest.getAmount());
+            rechargeReq.setPaymentMethod("RAZORPAY");
+            WalletDTO wallet = paymentService.rechargeWallet(authentication.getName(), rechargeReq);
+            // We just return null/empty for TransactionDTO since the frontend Wallet.jsx expects WalletDTO but verify razorpay returns TransactionDTO.
+            // Wait, we can return the WalletDTO wrapped in a ResponseEntity, or just return an empty TransactionDTO and let the frontend fetch the wallet.
+            // Let's just return a dummy transaction for now, the frontend will refetch the wallet.
+            TransactionDTO dummy = new TransactionDTO();
+            dummy.setStatus("SUCCESS");
+            return ResponseEntity.ok(dummy);
+        }
+
+        // If valid, process the payment as normal for a TRIP
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setTripId(verifyRequest.getTripId());
         paymentRequest.setPaymentMethod(verifyRequest.getPaymentMethod());

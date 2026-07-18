@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { paymentService } from '../../services/paymentService';
 import { Wallet as WalletIcon, Plus, History, RefreshCw, IndianRupee, ArrowDownRight, ArrowUpRight } from 'lucide-react';
 
 const Wallet = () => {
+  const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rechargeAmount, setRechargeAmount] = useState('');
@@ -34,16 +36,33 @@ const Wallet = () => {
     setError('');
     
     try {
-      // In a real app, this might open Razorpay to fund the wallet. 
-      // For this hackathon, we simulate a successful recharge instantly via the backend.
-      const data = await paymentService.rechargeWallet(parseFloat(rechargeAmount));
-      setBalance(data.balance);
-      setRechargeAmount('');
-      alert(`Successfully added ₹${rechargeAmount} to your wallet!`);
+      const amountFloat = parseFloat(rechargeAmount);
+      // 1. Create Order
+      const orderData = await paymentService.createOrder(amountFloat);
+      orderData.purpose = 'RECHARGE';
+      orderData.amount = amountFloat;
+
+      // 2. Open Razorpay Widget
+      paymentService.openRazorpayWidget(
+        orderData, 
+        user, 
+        async (verificationResult) => {
+          // Success Callback
+          await fetchWallet();
+          setRechargeAmount('');
+          setProcessingRecharge(false);
+          alert(`Successfully added ₹${rechargeAmount} to your wallet!`);
+        },
+        (err) => {
+          // Error Callback
+          console.error(err);
+          setError('Payment failed or cancelled.');
+          setProcessingRecharge(false);
+        }
+      );
     } catch (err) {
       console.error(err);
-      setError('Failed to recharge wallet.');
-    } finally {
+      setError('Failed to initiate recharge.');
       setProcessingRecharge(false);
     }
   };
@@ -66,7 +85,7 @@ const Wallet = () => {
       )}
 
       {/* Balance Card */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-[#171a20] rounded-md p-8 text-white shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/4 blur-2xl"></div>
         
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between space-y-6 sm:space-y-0">

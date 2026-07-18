@@ -39,8 +39,8 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build()));
 
         createUserIfNotFound("admin@acme.com", "Admin", "User", Role.ADMIN, company, false, "+917820022627");
-        User driver = createUserIfNotFound("driver@acme.com", "Driver", "John", Role.EMPLOYEE, company, true, "+917895669918");
-        createUserIfNotFound("passenger@acme.com", "Passenger", "Jane", Role.EMPLOYEE, company, false, "+919484844775");
+        User employee1 = createUserIfNotFound("alice@acme.com", "Alice", "Smith", Role.EMPLOYEE, company, true, "+917895669918");
+        createUserIfNotFound("bob@acme.com", "Bob", "Johnson", Role.EMPLOYEE, company, false, "+919484844775");
     }
 
     private User createUserIfNotFound(String email, String firstName, String lastName, Role role, Company company, boolean createVehicle, String phoneNumber) {

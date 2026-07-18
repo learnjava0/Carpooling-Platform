@@ -13,8 +13,11 @@ import com.odoohackathon.odoohackathon.domain.trip.repository.TripRepository;
 import com.odoohackathon.odoohackathon.domain.payment.entity.Wallet;
 import com.odoohackathon.odoohackathon.domain.payment.repository.WalletRepository;
 import com.odoohackathon.odoohackathon.domain.admin.dto.DriverOnboardRequest;
+import com.odoohackathon.odoohackathon.domain.user.dto.CompanySettingsDTO;
+import com.odoohackathon.odoohackathon.domain.user.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +41,7 @@ public class AdminController {
     private final CompanyRepository companyRepository;
     private final WalletRepository walletRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminService adminService;
 
     @PostMapping("/drivers/onboard")
     @Transactional
@@ -130,6 +134,24 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/settings")
+    public ResponseEntity<CompanySettingsDTO> getSettings(Authentication authentication) {
+        return ResponseEntity.ok(adminService.getCompanySettings(authentication.getName()));
+    }
+
+    @PutMapping("/settings")
+    public ResponseEntity<CompanySettingsDTO> updateSettings(
+            @RequestBody CompanySettingsDTO request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(adminService.updateCompanySettings(authentication.getName(), request));
+    }
+
+    @GetMapping("/employees")
+    public ResponseEntity<List<UserDTO>> getEmployees(Authentication authentication) {
+        return ResponseEntity.ok(adminService.getCompanyEmployees(authentication.getName()));
+    }
+
     @GetMapping("/vehicles")
     public ResponseEntity<List<VehicleDTO>> getAllVehicles() {
         List<VehicleDTO> vehicles = vehicleRepository.findAll().stream()
@@ -168,6 +190,7 @@ public class AdminController {
                 .model(vehicle.getModel())
                 .registrationNumber(vehicle.getRegistrationNumber())
                 .seatingCapacity(vehicle.getSeatingCapacity())
+                .userId(vehicle.getOwner() != null ? vehicle.getOwner().getId() : null)
                 .build();
     }
 }

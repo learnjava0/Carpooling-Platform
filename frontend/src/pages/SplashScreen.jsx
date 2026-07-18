@@ -1,37 +1,50 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Car } from 'lucide-react';
+import carVideo from '../assets/Car_animate.mp4';
 
 const SplashScreen = () => {
   const navigate = useNavigate();
+  const videoRef = React.useRef(null);
 
   useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(err => console.log('Video autoplay prevented', err));
+    }
+    
+    // Navigate after 4.5 seconds (3 to 5 seconds as requested)
     const timer = setTimeout(() => {
       navigate('/redirect');
-    }, 3000); // 3 seconds splash
+    }, 4500); 
 
     return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center overflow-hidden relative">
-      {/* Background Decor */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-500/10 rounded-full blur-3xl opacity-50 dark:opacity-20 animate-pulse"></div>
-      
-      {/* Logo & Animations */}
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-3xl shadow-2xl flex items-center justify-center animate-bounce">
-          <Car className="w-12 h-12 text-white" />
+    <div className="min-h-screen flex flex-col items-center justify-center overflow-hidden relative bg-white">
+      {/* Video Animation */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full w-full max-w-md px-6">
+        <div className="w-full max-w-xs mb-8 rounded-xl overflow-hidden shadow-sm border border-slate-100 bg-slate-50 flex items-center justify-center">
+          <video 
+            ref={videoRef}
+            autoPlay 
+            loop
+            muted 
+            playsInline 
+            className="w-full h-auto object-cover"
+          >
+            <source src={carVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
         
-        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mt-8 tracking-tight">
-          Commute<span className="text-primary-600">Connect</span>
+        <h1 className="text-4xl font-extrabold text-[#171a20] mt-4 tracking-tight">
+          RideConnect
         </h1>
         <p className="text-slate-500 mt-2 text-lg font-medium tracking-wide">Enterprise Carpooling Platform</p>
         
         {/* Loading Bar */}
-        <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mt-12 overflow-hidden">
-          <div className="h-full bg-primary-500 rounded-full w-1/2 animate-[progress_2s_ease-in-out_infinite]"></div>
+        <div className="w-48 h-1.5 bg-slate-200 rounded-full mt-12 overflow-hidden">
+          <div className="h-full bg-[#171a20] rounded-full w-1/2 animate-[progress_2s_ease-in-out_infinite]"></div>
         </div>
       </div>
     </div>

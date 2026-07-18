@@ -20,5 +20,13 @@ export const tripService = {
   cancelTrip: async (tripId) => {
     const response = await api.patch(`/trips/${tripId}/cancel`);
     return response.data;
+  },
+  acceptTrip: async (tripId) => {
+    const response = await api.post(`/trips/${tripId}/accept`);
+    return response.data;
+  },
+  rejectTrip: async (tripId) => {
+    const response = await api.post(`/trips/${tripId}/reject`);
+    return response.data;
   }
 };

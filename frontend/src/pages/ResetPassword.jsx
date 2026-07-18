@@ -1,29 +1,46 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { Lock, Mail, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, Key } from 'lucide-react';
 
 const ResetPassword = () => {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
-  const [oldPassword, setOldPassword] = useState('');
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleRequestToken = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      await authService.resetPassword(email, oldPassword, newPassword);
+      await authService.forgotPassword(email);
+      setStep(2);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to request reset token.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      await authService.resetPassword(token, newPassword);
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reset password. Check credentials.');
+      setError(err.response?.data?.message || 'Failed to reset password. Invalid or expired token.');
     } finally {
       setIsLoading(false);
     }
@@ -31,18 +48,19 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-4 relative overflow-hidden">
-      {/* Decorative Background Elements */}
       <div className="absolute top-[10%] right-[10%] w-[30%] h-[30%] bg-primary-500/20 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[10%] left-[10%] w-[30%] h-[30%] bg-secondary-500/20 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="w-full max-w-md glass-panel p-8 sm:p-10 rounded-3xl relative z-10">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl mb-4">
-            <Lock className="w-6 h-6" />
+            {step === 1 ? <Mail className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Set New Password</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            {step === 1 ? 'Forgot Password' : 'Reset Password'}
+          </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm">
-            Enter your email, temporary password, and your new password.
+            {step === 1 ? 'Enter your email to receive a password reset token.' : 'Enter your reset token and your new password.'}
           </p>
         </div>
 
@@ -61,67 +79,80 @@ const ResetPassword = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-4 w-4 text-slate-400" />
+            {step === 1 ? (
+              <form onSubmit={handleRequestToken} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Mail className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="input-field pl-10 text-sm py-2.5"
+                      placeholder="name@company.com"
+                      required
+                    />
                   </div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field pl-10 text-sm py-2.5"
-                    placeholder="name@company.com"
-                    required
-                  />
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Current/Temp Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-slate-400" />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-primary w-full py-3 flex items-center justify-center space-x-2 mt-4"
+                >
+                  <span>{isLoading ? 'Sending...' : 'Request Token'}</span>
+                  {!isLoading && <ArrowRight className="w-4 h-4" />}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Reset Token</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Key className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <input
+                      type="text"
+                      value={token}
+                      onChange={(e) => setToken(e.target.value)}
+                      className="input-field pl-10 text-sm py-2.5"
+                      placeholder="Enter token from console/email"
+                      required
+                    />
                   </div>
-                  <input
-                    type="password"
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    className="input-field pl-10 text-sm py-2.5"
-                    placeholder="••••••••"
-                    required
-                  />
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">New Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-slate-400" />
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">New Password</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Lock className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="input-field pl-10 text-sm py-2.5"
+                      placeholder="••••••••"
+                      required
+                    />
                   </div>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="input-field pl-10 text-sm py-2.5"
-                    placeholder="••••••••"
-                    required
-                  />
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary w-full py-3 flex items-center justify-center space-x-2 mt-4"
-              >
-                <span>{isLoading ? 'Updating...' : 'Update Password'}</span>
-                {!isLoading && <ArrowRight className="w-4 h-4" />}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-primary w-full py-3 flex items-center justify-center space-x-2 mt-4"
+                >
+                  <span>{isLoading ? 'Updating...' : 'Update Password'}</span>
+                  {!isLoading && <ArrowRight className="w-4 h-4" />}
+                </button>
+              </form>
+            )}
           </>
         )}
         

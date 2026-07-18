@@ -4,7 +4,9 @@ import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import AdminLayout from './pages/admin/AdminLayout';
 import DashboardOverview from './pages/admin/DashboardOverview';
-import OnboardDriver from './pages/admin/OnboardDriver';
+import ManageEmployees from './pages/admin/ManageEmployees';
+import ManageVehicles from './pages/admin/ManageVehicles';
+import PlatformSettings from './pages/admin/PlatformSettings';
 import EmployeeLayout from './pages/employee/EmployeeLayout';
 import DiscoverRides from './pages/employee/DiscoverRides';
 import MyTrips from './pages/employee/MyTrips';
@@ -14,6 +16,7 @@ import MyVehicles from './pages/employee/MyVehicles';
 import Profile from './pages/employee/Profile';
 import Settings from './pages/employee/Settings';
 import Wallet from './pages/employee/Wallet';
+import SavedPlaces from './pages/employee/SavedPlaces';
 import LiveTracking from './pages/employee/LiveTracking';
 import SplashScreen from './pages/SplashScreen';
 // Placeholders for remaining features
@@ -61,8 +64,9 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<DashboardOverview />} />
-            <Route path="users" element={<ManageUsers />} />
-            <Route path="onboard" element={<OnboardDriver />} />
+            <Route path="employees" element={<ManageEmployees />} />
+            <Route path="vehicles" element={<ManageVehicles />} />
+            <Route path="settings" element={<PlatformSettings />} />
           </Route>
           
           <Route path="/employee" element={
@@ -79,6 +83,7 @@ function App() {
             <Route path="track" element={<LiveTracking />} />
             <Route path="settings" element={<Settings />} />
             <Route path="wallet" element={<Wallet />} />
+            <Route path="saved-places" element={<SavedPlaces />} />
           </Route>
         </Routes>
       </BrowserRouter>

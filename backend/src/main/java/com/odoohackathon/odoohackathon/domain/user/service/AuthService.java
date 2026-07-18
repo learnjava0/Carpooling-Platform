@@ -11,6 +11,7 @@ import com.odoohackathon.odoohackathon.domain.user.dto.UserDTO;
 import com.odoohackathon.odoohackathon.domain.user.entity.Company;
 import com.odoohackathon.odoohackathon.domain.user.entity.Role;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
+import com.odoohackathon.odoohackathon.domain.user.entity.PasswordResetToken;
 import com.odoohackathon.odoohackathon.domain.user.repository.CompanyRepository;
 import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final WalletRepository walletRepository;
+    private final com.odoohackathon.odoohackathon.domain.user.repository.PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -105,5 +107,43 @@ public class AuthService {
                 .role(user.getRole())
                 .companyName(user.getCompany().getName())
                 .build();
+    }
+
+    @Transactional
+    public void generatePasswordResetToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User with this email not found"));
+
+        passwordResetTokenRepository.deleteByUser(user);
+
+        String token = java.util.UUID.randomUUID().toString();
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(java.time.LocalDateTime.now().plusHours(1))
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+        
+        // In a real hackathon app with email setup, we would send an email here.
+        // For now, we will print it to the console for testing purposes.
+        System.out.println("PASSWORD RESET TOKEN FOR " + email + ": " + token);
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        if (resetToken.getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new IllegalArgumentException("Token has expired");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.delete(resetToken);
     }
 }

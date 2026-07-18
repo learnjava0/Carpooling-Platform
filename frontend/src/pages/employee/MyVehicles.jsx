@@ -93,7 +93,7 @@ const MyVehicles = () => {
               </div>
               
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Seating Capacity (Excluding Driver)</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Seating Capacity (Excluding Yourself)</label>
                 <input type="number" name="seatingCapacity" min="1" max="8" value={formData.seatingCapacity} onChange={handleChange} required className="input-field w-full" />
               </div>
             </div>

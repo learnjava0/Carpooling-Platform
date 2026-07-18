@@ -26,6 +26,18 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+        authService.generatePasswordResetToken(request.get("email"));
+        return ResponseEntity.ok("If the email exists, a reset token has been generated.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody java.util.Map<String, String> request) {
+        authService.resetPassword(request.get("token"), request.get("newPassword"));
+        return ResponseEntity.ok("Password successfully reset.");
+    }
+
     @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(Exception e) {
         return ResponseEntity.status(401).body("Invalid email or password");

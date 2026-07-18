@@ -16,6 +16,10 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",
+    "sockjs-client": "^1.6.1",
+    "@stomp/stompjs": "^7.0.0",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^4.2.1",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {

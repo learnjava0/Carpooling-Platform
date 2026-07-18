@@ -21,4 +21,5 @@ public class TripDTO {
     private int bookedSeats;
     private BigDecimal totalFare;
     private TripStatus status;
+    private String startOtp;
 }

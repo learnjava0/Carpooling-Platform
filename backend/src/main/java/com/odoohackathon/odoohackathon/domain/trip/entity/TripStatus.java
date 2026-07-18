@@ -1,6 +1,9 @@
 package com.odoohackathon.odoohackathon.domain.trip.entity;
 
 public enum TripStatus {
+    PENDING,
+    ACCEPTED,
+    REJECTED,
     BOOKED,
     STARTED,
     IN_PROGRESS,
