@@ -43,6 +43,7 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final AuditService auditService;
 
+    @Transactional
     public WalletDTO getMyWallet(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
