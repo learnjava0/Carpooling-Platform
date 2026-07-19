@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { rideService } from '../../services/rideService';
 import { tripService } from '../../services/tripService';
-import { MapPin, Clock, Users, Play, CheckCircle2, CheckSquare, Car, CarFront } from 'lucide-react';
+import { MapPin, Clock, Users, Play, CheckCircle2, CheckSquare, Car, CarFront, Search } from 'lucide-react';
 
 const ActiveRides = () => {
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ const ActiveRides = () => {
   const [status, setStatus] = useState({ id: null, message: '', type: '' });
   const [editingRide, setEditingRide] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [locationFilter, setLocationFilter] = useState('');
 
   const fetchRides = async () => {
     setLoading(true);
@@ -101,24 +102,47 @@ const ActiveRides = () => {
       setEditingRide(null);
       fetchRides();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update ride.');
+      console.error('Failed to save ride', err);
     }
   };
+
+  const filteredRides = rides.filter(ride => {
+    if (!locationFilter) return true;
+    const filterLower = locationFilter.toLowerCase();
+    return (
+      (ride.pickupLocation && ride.pickupLocation.toLowerCase().includes(filterLower)) ||
+      (ride.destination && ride.destination.toLowerCase().includes(filterLower))
+    );
+  });
 
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div></div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex-1">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
-            <CarFront className="w-6 h-6 mr-3 text-primary-500" />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+            <CarFront className="w-6 h-6 mr-2 text-primary-500" />
             {user?.firstName}'s Active Rides
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage rides you are currently offering as a driver.</p>
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage rides you are currently offering as a driver.</p>
+        </div>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            className="input-field pl-10 py-2 w-full sm:w-64"
+            placeholder="Filter by location..."
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="space-y-6">
-        {rides.map(ride => (
+        {filteredRides.map(ride => (
           <div key={ride.id} className="card p-0 overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50">
               {editingRide === ride.id ? (
@@ -227,7 +251,7 @@ const ActiveRides = () => {
                               <Play className="w-4 h-4 mr-1.5" /> Start
                             </button>
                             <button 
-                              onClick={() => navigate('/employee/track', { state: { trip } })}
+                              onClick={() => navigate(`/employee/track/${ride.id}`, { state: { trip } })}
                               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
                             >
                               <MapPin className="w-4 h-4 mr-1.5" /> Track
@@ -240,7 +264,7 @@ const ActiveRides = () => {
                         ) : trip.status === 'STARTED' ? (
                           <div className="flex space-x-2">
                             <button 
-                              onClick={() => navigate('/employee/track', { state: { trip } })}
+                              onClick={() => navigate(`/employee/track/${ride.id}`, { state: { trip } })}
                               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
                             >
                               <MapPin className="w-4 h-4 mr-1.5" /> Track
@@ -266,10 +290,12 @@ const ActiveRides = () => {
           </div>
         ))}
 
-        {rides.length === 0 && (
-          <div className="col-span-full py-12 text-center text-slate-500 card border-dashed">
-            <Car className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-            <p>You don't have any active rides.</p>
+        {filteredRides.length === 0 && (
+          <div className="bg-white dark:bg-slate-800 p-12 rounded-2xl text-center shadow-sm border border-slate-200 dark:border-slate-700">
+            <Car className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+            <div className="text-slate-500 dark:text-slate-400 text-lg">
+              {locationFilter ? "No active rides found matching your location filter." : "You don't have any active rides."}
+            </div>
           </div>
         )}
       </div>

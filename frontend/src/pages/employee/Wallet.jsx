@@ -145,21 +145,28 @@ const Wallet = () => {
               <div key={tx.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
+                    tx.status === 'FAILED' || tx.status === 'CANCELLED' ? 'bg-slate-200 text-slate-500' :
                     tx.transactionType === 'DEDUCTION' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
                   }`}>
                     {tx.transactionType === 'DEDUCTION' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 dark:text-white">
+                    <h4 className="font-semibold text-slate-900 dark:text-white flex items-center">
                       {tx.transactionType === 'RECHARGE' ? 'Wallet Top-up' : 
                        tx.transactionType === 'DEDUCTION' ? 'Trip Payment' : 'Trip Earnings'}
+                      {(tx.status === 'FAILED' || tx.status === 'CANCELLED') && (
+                        <span className="ml-2 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-red-100 text-red-600">Failed</span>
+                      )}
                     </h4>
                     <p className="text-xs text-slate-500">
                       {new Date(tx.createdAt).toLocaleDateString()} at {new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {tx.paymentMethod}
                     </p>
                   </div>
                 </div>
-                <div className={`font-bold ${tx.transactionType === 'DEDUCTION' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                <div className={`font-bold ${
+                  tx.status === 'FAILED' || tx.status === 'CANCELLED' ? 'text-slate-400 line-through' :
+                  tx.transactionType === 'DEDUCTION' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'
+                }`}>
                   {tx.transactionType === 'DEDUCTION' ? '-' : '+'}₹{tx.amount.toFixed(2)}
                 </div>
               </div>

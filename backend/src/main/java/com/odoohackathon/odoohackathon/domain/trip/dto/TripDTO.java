@@ -21,8 +21,5 @@ public class TripDTO {
     private BigDecimal totalFare;
     private TripStatus status;
     private String startOtp;
-    // Flat ride info (avoids circular dependency with RideDTO)
-    private String ridePickupLocation;
-    private String rideDestination;
-    private LocalDateTime rideDepartureTime;
+    private com.odoohackathon.odoohackathon.domain.ride.dto.RideDTO ride;
 }

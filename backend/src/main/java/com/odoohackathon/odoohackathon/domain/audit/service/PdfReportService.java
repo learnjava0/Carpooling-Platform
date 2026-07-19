@@ -104,9 +104,10 @@ public class PdfReportService {
         document.add(new Paragraph(" "));
         
         for (TripDTO trip : trips) {
-            String route = trip.getRidePickupLocation() + " -> " + trip.getRideDestination();
+            String route = (trip.getRide() != null ? trip.getRide().getPickupLocation() : "Unknown") + " -> " + (trip.getRide() != null ? trip.getRide().getDestination() : "Unknown");
+            String departureTime = trip.getRide() != null && trip.getRide().getDepartureTime() != null ? trip.getRide().getDepartureTime().toString() : "Unknown";
             String details = String.format("Trip ID: %d | Status: %s | Fare: INR %s\nRoute: %s\nTime: %s\nSeats Booked: %d\n",
-                    trip.getId(), trip.getStatus(), trip.getTotalFare(), route, trip.getRideDepartureTime(), trip.getBookedSeats());
+                    trip.getId(), trip.getStatus(), trip.getTotalFare(), route, departureTime, trip.getBookedSeats());
             document.add(new Paragraph(details));
             document.add(new Paragraph("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"));
         }

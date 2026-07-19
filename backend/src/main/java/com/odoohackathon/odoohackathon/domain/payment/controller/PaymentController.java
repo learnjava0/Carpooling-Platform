@@ -95,4 +95,13 @@ public class PaymentController {
     public ResponseEntity<List<TransactionDTO>> getMyTransactions(Authentication authentication) {
         return ResponseEntity.ok(paymentService.getMyTransactions(authentication.getName()));
     }
+
+    @PostMapping("/log-failure")
+    public ResponseEntity<Void> logPaymentFailure(
+            @RequestBody PaymentRequest request,
+            Authentication authentication
+    ) {
+        paymentService.logFailedPayment(authentication.getName(), request);
+        return ResponseEntity.ok().build();
+    }
 }

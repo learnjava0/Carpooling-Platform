@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsService } from '../../services/analyticsService';
+import html2pdf from 'html2pdf.js';
 import { TrendingUp, Users, Activity, Car, Leaf, DollarSign, Download, ShieldAlert } from 'lucide-react';
 
 const DashboardOverview = () => {
@@ -26,17 +27,18 @@ const DashboardOverview = () => {
   const handleDownloadAnalytics = async () => {
     setDownloadingAnalytics(true);
     try {
-      const dataBlob = await analyticsService.downloadDashboardPdf();
-      const blob = new Blob([dataBlob], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'admin-platform-analytics.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+      const element = document.getElementById('admin-dashboard-pdf-content');
+      const opt = {
+        margin:       0.5,
+        filename:     'admin-platform-analytics.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+      };
+      
+      await html2pdf().set(opt).from(element).save();
     } catch (err) {
-      alert('Failed to download Platform Analytics PDF.');
+      alert('Failed to generate Platform Analytics PDF.');
     } finally {
       setDownloadingAnalytics(false);
     }
@@ -132,6 +134,7 @@ const DashboardOverview = () => {
         </div>
       </div>
 
+      <div id="admin-dashboard-pdf-content" className="space-y-6">
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {kpis.map((kpi, idx) => (
@@ -157,6 +160,7 @@ const DashboardOverview = () => {
           <Leaf className="w-12 h-12 mb-3 text-slate-300 dark:text-slate-600" />
           <p>Environmental Impact (Coming Soon)</p>
         </div>
+      </div>
       </div>
     </div>
   );

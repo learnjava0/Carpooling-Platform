@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tripService } from '../../services/tripService';
 import api from '../../services/api';
+import html2pdf from 'html2pdf.js';
 import { BarChart3, Download, Car, Calendar, DollarSign, Leaf, MapPin, CheckCircle2 } from 'lucide-react';
 
 const Analytics = () => {
@@ -26,15 +27,18 @@ const Analytics = () => {
   const handleDownloadPdf = async () => {
     setDownloading(true);
     try {
-      const response = await api.get('/trips/me/pdf', { responseType: 'blob' });
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'my-trips-report.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+      const element = document.getElementById('analytics-pdf-content');
+      const opt = {
+        margin:       0.5,
+        filename:     'my-trips-report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      
+      // We don't want the download button in the PDF, so we can temporarily hide it if we want, 
+      // but wrapping the specific content container below the header is usually better.
+      await html2pdf().set(opt).from(element).save();
     } catch (err) {
       alert('Failed to generate and download PDF report.');
     } finally {
@@ -83,6 +87,7 @@ const Analytics = () => {
 
       {error && <div className="text-red-500 bg-red-50 dark:bg-red-950/20 p-4 rounded-xl">{error}</div>}
 
+      <div id="analytics-pdf-content" className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card p-6 bg-white dark:bg-slate-800 flex items-center">
@@ -178,6 +183,7 @@ const Analytics = () => {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -218,7 +218,7 @@ const MyTrips = () => {
                 </div>
               ) : (trip.status === 'STARTED' || trip.status === 'ACCEPTED') ? (
                 <button 
-                  onClick={() => navigate('/employee/track', { state: { trip } })}
+                  onClick={() => navigate(`/employee/track/${trip.ride?.id}`, { state: { trip } })}
                   className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-2.5 rounded-lg flex justify-center items-center transition-colors font-medium text-sm"
                 >
                   <MapPin className="w-4 h-4 mr-2" /> Track Ride
@@ -241,7 +241,7 @@ const MyTrips = () => {
                 </button>
               ) : trip.status === 'STARTED' ? (
                 <button 
-                  onClick={() => navigate('/employee/track', { state: { trip } })}
+                  onClick={() => navigate(`/employee/track/${trip.ride?.id}`, { state: { trip } })}
                   className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 rounded-lg flex justify-center items-center transition-colors font-medium text-sm"
                 >
                   <MapPin className="w-4 h-4 mr-2" /> Track Trip

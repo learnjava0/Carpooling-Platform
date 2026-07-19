@@ -157,19 +157,10 @@ const DiscoverRides = () => {
       if (searchDate && !searchDate.includes('T')) {
         searchDate = `${searchDate}T00:00:00`;
       }
-      const pickupLat = routeInfo.startCoords ? routeInfo.startCoords[0] : null;
-      const pickupLng = routeInfo.startCoords ? routeInfo.startCoords[1] : null;
-      const destinationLat = routeInfo.endCoords ? routeInfo.endCoords[0] : null;
-      const destinationLng = routeInfo.endCoords ? routeInfo.endCoords[1] : null;
-
       const results = await rideService.searchRides(
         searchParams.source, 
         searchParams.destination, 
-        searchDate,
-        pickupLat,
-        pickupLng,
-        destinationLat,
-        destinationLng
+        searchDate
       );
       setRides(results);
     } catch (err) {
@@ -182,9 +173,13 @@ const DiscoverRides = () => {
   const handleBookRide = async (rideId) => {
     setBookingStatus({ id: rideId, status: 'booking' });
     try {
-      await tripService.bookTrip(rideId);
+      await tripService.bookTrip({ rideId, bookedSeats: 1 });
       setBookingStatus({ id: rideId, status: 'success' });
-      const results = await rideService.searchRides(searchParams.source, searchParams.destination, searchParams.date);
+      let searchDate = searchParams.date || new Date().toISOString();
+      if (searchDate && !searchDate.includes('T')) {
+        searchDate = `${searchDate}T00:00:00`;
+      }
+      const results = await rideService.searchRides(searchParams.source, searchParams.destination, searchDate);
       setRides(results);
       setTimeout(() => setBookingStatus({ id: null, status: '' }), 3000);
     } catch (err) {

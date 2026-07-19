@@ -188,9 +188,19 @@ public class TripService {
                         .email(trip.getPassenger().getEmail())
                         .phoneNumber(trip.getPassenger().getPhoneNumber())
                         .build())
-                .ridePickupLocation(trip.getRide().getPickupLocation())
-                .rideDestination(trip.getRide().getDestination())
-                .rideDepartureTime(trip.getRide().getDepartureTime())
+                .ride(com.odoohackathon.odoohackathon.domain.ride.dto.RideDTO.builder()
+                        .id(trip.getRide().getId())
+                        .pickupLocation(trip.getRide().getPickupLocation())
+                        .destination(trip.getRide().getDestination())
+                        .departureTime(trip.getRide().getDepartureTime())
+                        .farePerSeat(trip.getRide().getFarePerSeat())
+                        .driver(UserDTO.builder()
+                                .firstName(trip.getRide().getDriver().getFirstName())
+                                .lastName(trip.getRide().getDriver().getLastName())
+                                .email(trip.getRide().getDriver().getEmail())
+                                .phoneNumber(trip.getRide().getDriver().getPhoneNumber())
+                                .build())
+                        .build())
                 .build();
     }
 }
