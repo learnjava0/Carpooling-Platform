@@ -15,4 +15,12 @@ export const rideService = {
     const response = await api.get('/rides/me');
     return response.data;
   },
+  updateMyRide: async (id, rideData) => {
+    const response = await api.put(`/rides/${id}`, rideData);
+    return response.data;
+  },
+  getAvailableLocations: async () => {
+    const response = await api.get('/rides/locations');
+    return response.data;
+  },
 };

@@ -32,4 +32,14 @@ public class VehicleController {
         String userEmail = authentication.getName();
         return ResponseEntity.ok(vehicleService.getUserVehicles(userEmail));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VehicleDTO> updateVehicle(
+            @PathVariable Long id,
+            @RequestBody VehicleRequest request,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        return ResponseEntity.ok(vehicleService.updateVehicle(id, userEmail, request));
+    }
 }

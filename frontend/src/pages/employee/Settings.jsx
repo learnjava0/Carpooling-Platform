@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, History, Car, HelpCircle, MessageSquare, Compass } from 'lucide-react';
+import { MapPin, CreditCard, History, Car, HelpCircle, MessageSquare, Compass, BarChart3 } from 'lucide-react';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const Settings = () => {
     { icon: <History className="w-5 h-5" />, label: 'Ride History', action: () => navigate('/employee/trips') },
     { icon: <CreditCard className="w-5 h-5" />, label: 'Payment Methods & Wallet', action: () => navigate('/employee/wallet') },
     { icon: <MapPin className="w-5 h-5" />, label: 'Saved Places', action: () => navigate('/employee/saved-places') },
+    { icon: <BarChart3 className="w-5 h-5" />, label: 'Report / Analytics', action: () => navigate('/employee/analytics') },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'Chat', action: () => alert('View your past communications.') },
     { icon: <HelpCircle className="w-5 h-5" />, label: 'Help & Support', action: () => alert('Contact your enterprise administrator for carpooling support.') },
   ];

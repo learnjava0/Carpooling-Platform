@@ -50,6 +50,7 @@ public class RideService {
                 .departureTime(request.getDepartureTime())
                 .availableSeats(request.getAvailableSeats())
                 .farePerSeat(request.getFarePerSeat())
+                .routeWaypoints(request.getRouteWaypoints())
                 .build();
 
         ride = rideRepository.save(ride);
@@ -57,11 +58,42 @@ public class RideService {
     }
 
     public List<RideDTO> searchRides(String pickup, String destination, LocalDateTime time, int seats) {
-        return rideRepository.findByPickupLocationAndDestinationAndDepartureTimeGreaterThanEqualAndAvailableSeatsGreaterThanEqual(
+        return rideRepository.findRidesByLocationsAndSeats(
                 pickup, destination, time, seats)
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    public java.util.Map<String, List<String>> getAvailableLocations() {
+        java.util.Map<String, List<String>> locations = new java.util.HashMap<>();
+        
+        List<String> pickups = rideRepository.findDistinctPickupLocations();
+        List<String> destinations = rideRepository.findDistinctDestinations();
+        
+        // Also fetch all route waypoints to extract intermediate stops
+        List<String> waypointsList = rideRepository.findAll().stream()
+                .filter(r -> r.getRouteWaypoints() != null && !r.getRouteWaypoints().isEmpty() && r.getAvailableSeats() > 0 && r.getDepartureTime().isAfter(LocalDateTime.now()))
+                .map(Ride::getRouteWaypoints)
+                .collect(Collectors.toList());
+                
+        java.util.Set<String> allLocations = new java.util.HashSet<>();
+        allLocations.addAll(pickups);
+        allLocations.addAll(destinations);
+        
+        for (String wps : waypointsList) {
+            String[] parts = wps.split(",");
+            for (String part : parts) {
+                allLocations.add(part.trim());
+            }
+        }
+        
+        List<String> sortedLocations = new java.util.ArrayList<>(allLocations);
+        java.util.Collections.sort(sortedLocations);
+        
+        locations.put("pickupLocations", sortedLocations);
+        locations.put("destinations", sortedLocations);
+        return locations;
     }
 
     public List<RideDTO> getDriverRides(String userEmail) {
@@ -72,6 +104,27 @@ public class RideService {
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    public RideDTO updateMyRide(Long id, String userEmail, RideRequest request) {
+        Ride ride = rideRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
+        
+        if (!ride.getDriver().getEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("Unauthorized to edit this ride");
+        }
+
+        if (ride.getAvailableSeats() < ride.getVehicle().getSeatingCapacity()) {
+            throw new IllegalStateException("Cannot edit a ride that already has confirmed bookings.");
+        }
+
+        ride.setPickupLocation(request.getPickupLocation());
+        ride.setDestination(request.getDestination());
+        ride.setDepartureTime(request.getDepartureTime());
+        ride.setFarePerSeat(request.getFarePerSeat());
+        ride.setRouteWaypoints(request.getRouteWaypoints());
+
+        return mapToDto(rideRepository.save(ride));
     }
 
     private RideDTO mapToDto(Ride ride) {
@@ -96,6 +149,7 @@ public class RideService {
                 .departureTime(ride.getDepartureTime())
                 .availableSeats(ride.getAvailableSeats())
                 .farePerSeat(ride.getFarePerSeat())
+                .routeWaypoints(ride.getRouteWaypoints())
                 .trips(ride.getTrips() != null ? ride.getTrips().stream().map(trip -> TripDTO.builder()
                         .id(trip.getId())
                         .passenger(UserDTO.builder()

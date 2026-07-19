@@ -38,8 +38,9 @@ public class AdminAuditController {
     @GetMapping("/logs")
     public ResponseEntity<List<AuditLog>> getAuditLogs() {
         try {
-            String sql = "SELECT event_type, user_email, details, ip_address FROM audit_logs ORDER BY event_time DESC LIMIT 100";
+            String sql = "SELECT event_time, event_type, user_email, details, ip_address FROM audit_logs ORDER BY event_time DESC LIMIT 100";
             List<AuditLog> logs = clickhouseJdbcTemplate.query(sql, (rs, rowNum) -> AuditLog.builder()
+                    .eventTime(rs.getString("event_time"))
                     .eventType(rs.getString("event_type"))
                     .userEmail(rs.getString("user_email"))
                     .details(rs.getString("details"))

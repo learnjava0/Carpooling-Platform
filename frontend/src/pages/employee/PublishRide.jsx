@@ -10,6 +10,7 @@ const PublishRide = () => {
     departureTime: '',
     availableSeats: 3,
     farePerSeat: 150,
+    routeWaypoints: '',
   });
 
   const [status, setStatus] = useState({ type: '', message: '' });
@@ -54,7 +55,7 @@ const PublishRide = () => {
         vehicleId: vehicleId
       });
       setStatus({ type: 'success', message: 'Ride successfully published!' });
-      setFormData({ pickupLocation: '', destination: '', departureTime: '', availableSeats: 3, farePerSeat: 150 });
+      setFormData({ pickupLocation: '', destination: '', departureTime: '', availableSeats: 3, farePerSeat: 150, routeWaypoints: '' });
     } catch (err) {
       setStatus({ type: 'error', message: err.response?.data?.message || 'Failed to publish ride.' });
     } finally {
@@ -95,6 +96,16 @@ const PublishRide = () => {
                 <MapPin className="h-4 w-4 text-slate-400" />
               </div>
               <input type="text" name="destination" value={formData.destination} onChange={handleChange} required className="input-field pl-10 text-sm" placeholder="e.g. Metro Station Sector 21" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">On-The-Way Stops (Optional)</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <MapPin className="h-4 w-4 text-slate-400" />
+              </div>
+              <input type="text" name="routeWaypoints" value={formData.routeWaypoints} onChange={handleChange} className="input-field pl-10 text-sm" placeholder="e.g. Danilimda, SG Highway (comma separated)" />
             </div>
           </div>
 

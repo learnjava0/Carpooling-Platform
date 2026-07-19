@@ -40,6 +40,14 @@ const DiscoverRides = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(false);
   const [bookingStatus, setBookingStatus] = useState({ id: null, status: '' });
+  const [availableLocations, setAvailableLocations] = useState({ pickupLocations: [], destinations: [] });
+  const [savedPlaces] = useState([
+    { id: 1, type: 'home', label: 'Home', address: '123 Main St, New Delhi' },
+    { id: 2, type: 'work', label: 'Work', address: 'Cyber City, Gurgaon' }
+  ]);
+  
+  const [showSourceDropdown, setShowSourceDropdown] = useState(false);
+  const [showDestDropdown, setShowDestDropdown] = useState(false);
 
   const [routeInfo, setRouteInfo] = useState({
     startCoords: null,
@@ -49,6 +57,18 @@ const DiscoverRides = () => {
     duration: null,
     loading: false
   });
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const data = await rideService.getAvailableLocations();
+        setAvailableLocations(data);
+      } catch (err) {
+        console.error("Failed to fetch locations", err);
+      }
+    };
+    fetchLocations();
+  }, []);
 
   useEffect(() => {
     const source = searchParams.source;
@@ -165,8 +185,29 @@ const DiscoverRides = () => {
                 placeholder="Leaving from..." 
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 dark:text-white"
                 value={searchParams.source}
-                onChange={e => setSearchParams({...searchParams, source: e.target.value})}
+                onChange={e => { setSearchParams({...searchParams, source: e.target.value}); setShowSourceDropdown(true); }}
+                onFocus={() => setShowSourceDropdown(true)}
+                onBlur={() => setTimeout(() => setShowSourceDropdown(false), 200)}
               />
+              {showSourceDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                  {savedPlaces.map(place => (
+                     <div key={place.id} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer flex items-center border-b border-slate-100 dark:border-slate-700/50" onClick={() => { setSearchParams({...searchParams, source: place.address}); setShowSourceDropdown(false); }}>
+                        <MapPin className="w-4 h-4 mr-2 text-primary-500" />
+                        <div>
+                           <div className="text-sm font-semibold text-slate-900 dark:text-white">{place.label}</div>
+                           <div className="text-xs text-slate-500">{place.address}</div>
+                        </div>
+                     </div>
+                  ))}
+                  {availableLocations.pickupLocations.filter(loc => loc.toLowerCase().includes(searchParams.source.toLowerCase())).map((loc, i) => (
+                    <div key={`pickup-${i}`} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer flex items-center text-sm text-slate-700 dark:text-slate-300" onClick={() => { setSearchParams({...searchParams, source: loc}); setShowSourceDropdown(false); }}>
+                      <MapPin className="w-4 h-4 mr-2 text-slate-400" />
+                      {loc}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex-1 relative">
               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -175,8 +216,29 @@ const DiscoverRides = () => {
                 placeholder="Going to..." 
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 dark:text-white"
                 value={searchParams.destination}
-                onChange={e => setSearchParams({...searchParams, destination: e.target.value})}
+                onChange={e => { setSearchParams({...searchParams, destination: e.target.value}); setShowDestDropdown(true); }}
+                onFocus={() => setShowDestDropdown(true)}
+                onBlur={() => setTimeout(() => setShowDestDropdown(false), 200)}
               />
+              {showDestDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                  {savedPlaces.map(place => (
+                     <div key={place.id} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer flex items-center border-b border-slate-100 dark:border-slate-700/50" onClick={() => { setSearchParams({...searchParams, destination: place.address}); setShowDestDropdown(false); }}>
+                        <MapPin className="w-4 h-4 mr-2 text-primary-500" />
+                        <div>
+                           <div className="text-sm font-semibold text-slate-900 dark:text-white">{place.label}</div>
+                           <div className="text-xs text-slate-500">{place.address}</div>
+                        </div>
+                     </div>
+                  ))}
+                  {availableLocations.destinations.filter(loc => loc.toLowerCase().includes(searchParams.destination.toLowerCase())).map((loc, i) => (
+                    <div key={`dest-${i}`} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer flex items-center text-sm text-slate-700 dark:text-slate-300" onClick={() => { setSearchParams({...searchParams, destination: loc}); setShowDestDropdown(false); }}>
+                      <MapPin className="w-4 h-4 mr-2 text-slate-400" />
+                      {loc}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex-1 relative">
               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -315,6 +377,11 @@ const DiscoverRides = () => {
                     </div>
                   </div>
                 </div>
+                {ride.routeWaypoints && (
+                  <div className="mt-3 text-xs text-slate-500 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">On-the-way stops:</span> {ride.routeWaypoints}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700/50">

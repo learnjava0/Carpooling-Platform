@@ -45,6 +45,9 @@ public class Ride {
     @Column(nullable = false)
     private BigDecimal farePerSeat;
 
+    @Column(nullable = true, length = 1000)
+    private String routeWaypoints;
+
     @OneToMany(mappedBy = "ride", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Trip> trips = new ArrayList<>();

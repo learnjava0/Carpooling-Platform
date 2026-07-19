@@ -10,6 +10,8 @@ const ActiveRides = () => {
   const [loading, setLoading] = useState(true);
   const [otpInputs, setOtpInputs] = useState({});
   const [status, setStatus] = useState({ id: null, message: '', type: '' });
+  const [editingRide, setEditingRide] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
 
   const fetchRides = async () => {
     setLoading(true);
@@ -80,6 +82,27 @@ const ActiveRides = () => {
     }
   };
 
+  const handleEditRide = (ride) => {
+    setEditingRide(ride.id);
+    setEditFormData({
+      pickupLocation: ride.pickupLocation,
+      destination: ride.destination,
+      departureTime: ride.departureTime,
+      farePerSeat: ride.farePerSeat,
+      routeWaypoints: ride.routeWaypoints || ''
+    });
+  };
+
+  const handleSaveRide = async (id) => {
+    try {
+      await rideService.updateMyRide(id, editFormData);
+      setEditingRide(null);
+      fetchRides();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update ride.');
+    }
+  };
+
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div></div>;
 
   return (
@@ -93,22 +116,50 @@ const ActiveRides = () => {
         {rides.map(ride => (
           <div key={ride.id} className="card p-0 overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50">
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="flex items-center text-slate-900 dark:text-white font-semibold">
-                    <MapPin className="w-4 h-4 mr-2 text-green-500" /> {ride.pickupLocation}
+              {editingRide === ride.id ? (
+                <div className="space-y-4">
+                  <div className="flex space-x-4">
+                    <input type="text" value={editFormData.pickupLocation} onChange={e => setEditFormData({...editFormData, pickupLocation: e.target.value})} className="input-field text-sm flex-1" placeholder="Pickup"/>
+                    <input type="text" value={editFormData.destination} onChange={e => setEditFormData({...editFormData, destination: e.target.value})} className="input-field text-sm flex-1" placeholder="Destination"/>
                   </div>
-                  <div className="flex items-center text-slate-900 dark:text-white font-semibold">
-                    <MapPin className="w-4 h-4 mr-2 text-red-500" /> {ride.destination}
+                  <div className="flex space-x-4">
+                    <input type="datetime-local" value={editFormData.departureTime.slice(0, 16)} onChange={e => setEditFormData({...editFormData, departureTime: e.target.value})} className="input-field text-sm flex-1"/>
+                    <input type="number" value={editFormData.farePerSeat} onChange={e => setEditFormData({...editFormData, farePerSeat: e.target.value})} className="input-field text-sm flex-1" placeholder="Fare"/>
+                    <input type="text" value={editFormData.routeWaypoints} onChange={e => setEditFormData({...editFormData, routeWaypoints: e.target.value})} className="input-field text-sm flex-1" placeholder="Waypoints (stops)"/>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleSaveRide(ride.id)} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium">Save</button>
+                    <button onClick={() => setEditingRide(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Cancel</button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-slate-900 dark:text-white">₹{ride.farePerSeat} <span className="text-sm font-normal text-slate-500">/seat</span></div>
-                  <div className="text-sm text-slate-500 flex items-center justify-end mt-1">
-                    <Clock className="w-3 h-3 mr-1" /> {new Date(ride.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+              ) : (
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                    <div className="flex items-center text-slate-900 dark:text-white font-semibold">
+                      <MapPin className="w-4 h-4 mr-2 text-green-500" /> {ride.pickupLocation}
+                    </div>
+                    <div className="flex items-center text-slate-900 dark:text-white font-semibold">
+                      <MapPin className="w-4 h-4 mr-2 text-red-500" /> {ride.destination}
+                    </div>
+                    {ride.routeWaypoints && (
+                      <div className="text-xs text-slate-500 mt-1 ml-6">
+                        Stops: {ride.routeWaypoints}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="flex justify-end space-x-2 mb-2">
+                       {ride.trips?.length === 0 && (
+                         <button onClick={() => handleEditRide(ride)} className="text-blue-600 hover:underline text-sm font-medium">Edit Ride</button>
+                       )}
+                    </div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">₹{ride.farePerSeat} <span className="text-sm font-normal text-slate-500">/seat</span></div>
+                    <div className="text-sm text-slate-500 flex items-center justify-end mt-1">
+                      <Clock className="w-3 h-3 mr-1" /> {new Date(ride.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="p-6">

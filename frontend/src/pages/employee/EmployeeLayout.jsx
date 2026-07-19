@@ -16,7 +16,6 @@ const EmployeeLayout = () => {
   const navItems = [
     { name: 'Discover Rides', path: '/employee', end: true, icon: Search },
     { name: 'My Trips', path: '/employee/trips', end: false, icon: History },
-    { name: 'Analytics', path: '/employee/analytics', end: false, icon: BarChart3 },
     { name: 'Active Rides', path: '/employee/active-rides', end: false, icon: CarFront },
     { name: 'Publish Ride', path: '/employee/publish', end: false, icon: PlusCircle },
     { name: 'My Vehicles', path: '/employee/vehicles', end: false, icon: Car },
