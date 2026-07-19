@@ -21,6 +21,7 @@ const AdminDashboard = () => {
   // Users & Vehicles State
   const [users, setUsers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
+  const [stats, setStats] = useState({ totalUsers: 0, totalTrips: 0 });
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -34,8 +35,21 @@ const AdminDashboard = () => {
       }
     };
     
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/admin/dashboard/stats');
+        setStats(response.data);
+      } catch (err) {
+        console.error('Failed to fetch stats', err);
+      }
+    };
+
     fetchLogs();
-    const interval = setInterval(fetchLogs, 5000); // Poll every 5s for live feed
+    fetchStats();
+    const interval = setInterval(() => {
+      fetchLogs();
+      fetchStats();
+    }, 5000); // Poll every 5s for live feed
     return () => clearInterval(interval);
   }, []);
 
@@ -153,8 +167,8 @@ const AdminDashboard = () => {
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-blue-100 text-blue-600 rounded-lg"><Users className="w-6 h-6"/></div>
             <div>
-              <div className="text-2xl font-bold">14,203</div>
-              <div className="text-sm text-slate-500">Active Users</div>
+              <div className="text-2xl font-bold">{stats.totalUsers}</div>
+              <div className="text-sm text-slate-500">Registered Users</div>
             </div>
           </div>
         </div>
@@ -162,8 +176,8 @@ const AdminDashboard = () => {
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-green-100 text-green-600 rounded-lg"><Activity className="w-6 h-6"/></div>
             <div>
-              <div className="text-2xl font-bold">892</div>
-              <div className="text-sm text-slate-500">Events / min</div>
+              <div className="text-2xl font-bold">{stats.totalTrips}</div>
+              <div className="text-sm text-slate-500">Total Trips</div>
             </div>
           </div>
         </div>
@@ -171,8 +185,8 @@ const AdminDashboard = () => {
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-purple-100 text-purple-600 rounded-lg"><Database className="w-6 h-6"/></div>
             <div>
-              <div className="text-2xl font-bold">2.4M</div>
-              <div className="text-sm text-slate-500">Logs Processed</div>
+              <div className="text-2xl font-bold">{logs.length}</div>
+              <div className="text-sm text-slate-500">Recent Logs Processing</div>
             </div>
           </div>
         </div>

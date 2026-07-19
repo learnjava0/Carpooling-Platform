@@ -59,6 +59,7 @@ const DiscoverRides = () => {
 
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [bookingStatus, setBookingStatus] = useState({ id: null, status: '' });
   const [availableLocations, setAvailableLocations] = useState({ pickupLocations: [], destinations: [] });
   const [savedPlaces] = useState([
@@ -93,6 +94,8 @@ const DiscoverRides = () => {
   useEffect(() => {
     const source = searchParams.source;
     const destination = searchParams.destination;
+    setHasSearched(false);
+    setRides([]); // Clear rides when changing search params
 
     if (!source || source.length < 3 || !destination || destination.length < 3) {
       setRouteInfo({ startCoords: null, endCoords: null, path: null, distance: null, duration: null, loading: false });
@@ -148,6 +151,7 @@ const DiscoverRides = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setHasSearched(true);
     try {
       let searchDate = searchParams.date || new Date().toISOString();
       if (searchDate && !searchDate.includes('T')) {
@@ -285,7 +289,7 @@ const DiscoverRides = () => {
       </div>
 
       {/* Calculated Route Map Confirmation */}
-      {searchParams.source.length > 2 && searchParams.destination.length > 2 && (
+      {hasSearched && searchParams.source.length > 2 && searchParams.destination.length > 2 && (
         <div className="card p-6 mt-2 border-2 border-primary-100 dark:border-primary-900/30">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center">
@@ -352,7 +356,7 @@ const DiscoverRides = () => {
         </div>
       )}
 
-      {rides.length > 0 ? (
+      {hasSearched && rides.length > 0 ? (
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
             <span className="bg-primary-500 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3">{rides.length}</span>
@@ -430,7 +434,7 @@ const DiscoverRides = () => {
           ))}
         </div>
       ) : (
-        !loading && (
+        hasSearched && !loading && (
           <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
             <Car className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No rides found</h3>

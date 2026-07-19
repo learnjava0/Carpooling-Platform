@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
-import { Users, UserPlus, Search, Building2, Trash2 } from 'lucide-react';
+import { Users, UserPlus, Search, Building2, Trash2, Edit, Eye } from 'lucide-react';
 
 const ManageEmployees = () => {
   const [employees, setEmployees] = useState([]);
@@ -16,6 +16,14 @@ const ManageEmployees = () => {
     role: 'EMPLOYEE'
   });
   const [onboardLoading, setOnboardLoading] = useState(false);
+
+  // Edit / View State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewEmployee, setViewEmployee] = useState(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -44,6 +52,21 @@ const ManageEmployees = () => {
       console.error('Failed to onboard employee:', error);
     } finally {
       setOnboardLoading(false);
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    try {
+      await adminService.updateEmployee(editForm.id, editForm);
+      setShowEditModal(false);
+      fetchEmployees();
+    } catch (error) {
+      console.error('Failed to update employee:', error);
+      alert('Failed to update employee');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -148,7 +171,13 @@ const ManageEmployees = () => {
                         {emp.companyName}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-right space-x-2">
+                      <button onClick={() => { setViewEmployee(emp); setShowViewModal(true); }} className="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => { setEditForm(emp); setShowEditModal(true); }} className="text-orange-500 hover:text-orange-700 p-1 rounded transition-colors">
+                        <Edit className="w-4 h-4" />
+                      </button>
                       <button onClick={() => handleDelete(emp.id)} className="text-red-500 hover:text-red-700 p-1 rounded transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -211,6 +240,61 @@ const ManageEmployees = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editForm && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Edit Employee</h2>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                  <input type="text" required className="input-field py-2" value={editForm.firstName} onChange={e => setEditForm({...editForm, firstName: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                  <input type="text" required className="input-field py-2" value={editForm.lastName} onChange={e => setEditForm({...editForm, lastName: e.target.value})} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                <input type="email" required className="input-field py-2" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                <input type="tel" required className="input-field py-2" value={editForm.phoneNumber} onChange={e => setEditForm({...editForm, phoneNumber: e.target.value})} />
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 btn-secondary py-2">Cancel</button>
+                <button type="submit" disabled={editLoading} className="flex-1 btn-primary py-2 flex justify-center items-center">
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {showViewModal && viewEmployee && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Employee Details</h2>
+            <div className="space-y-3 text-sm">
+              <p><span className="font-semibold w-24 inline-block text-slate-500">ID:</span> #{viewEmployee.id}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Name:</span> {viewEmployee.firstName} {viewEmployee.lastName}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Email:</span> {viewEmployee.email}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Phone:</span> {viewEmployee.phoneNumber || 'N/A'}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Role:</span> {viewEmployee.role}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Company:</span> {viewEmployee.companyName || 'N/A'}</p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setShowViewModal(false)} className="btn-secondary py-2 px-4">Close</button>
+            </div>
           </div>
         </div>
       )}

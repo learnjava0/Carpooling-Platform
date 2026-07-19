@@ -69,6 +69,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<DashboardOverview />} />
+            <Route path="logs" element={<AdminDashboard />} />
             <Route path="employees" element={<ManageEmployees />} />
             <Route path="vehicles" element={<ManageVehicles />} />
             <Route path="settings" element={<PlatformSettings />} />

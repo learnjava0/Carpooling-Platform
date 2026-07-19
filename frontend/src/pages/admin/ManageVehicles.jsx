@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
-import { Car, Search, Hash, Users, Edit, Trash2 } from 'lucide-react';
+import { Car, Search, Hash, Users, Edit, Trash2, Eye } from 'lucide-react';
 
 const ManageVehicles = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewVehicle, setViewVehicle] = useState(null);
 
   useEffect(() => {
     fetchVehicles();
@@ -29,6 +36,21 @@ const ManageVehicles = () => {
       fetchVehicles();
     } catch (error) {
       alert("Failed to delete vehicle.");
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    try {
+      await adminService.updateVehicle(editForm.id, editForm);
+      setShowEditModal(false);
+      fetchVehicles();
+    } catch (error) {
+      console.error('Failed to update vehicle:', error);
+      alert('Failed to update vehicle');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -86,10 +108,15 @@ const ManageVehicles = () => {
                     Owned by ID: <span className="font-semibold text-slate-900">#{vehicle.userId}</span>
                   </div>
                   <div className="flex space-x-2">
+                    <button onClick={() => { setViewVehicle(vehicle); setShowViewModal(true); }} className="text-sm font-medium text-blue-500 hover:text-blue-700 transition-colors p-1 rounded hover:bg-blue-50">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => { setEditForm(vehicle); setShowEditModal(true); }} className="text-sm font-medium text-orange-500 hover:text-orange-700 transition-colors p-1 rounded hover:bg-orange-50">
+                      <Edit className="w-4 h-4" />
+                    </button>
                     <button onClick={() => handleDelete(vehicle.id)} className="text-sm font-medium text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50">
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <button className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors py-1">View Details</button>
                   </div>
                 </div>
               </div>
@@ -105,6 +132,54 @@ const ManageVehicles = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && editForm && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Edit Vehicle</h2>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Model</label>
+                <input type="text" required className="input-field py-2" value={editForm.model} onChange={e => setEditForm({...editForm, model: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Registration Number</label>
+                <input type="text" required className="input-field py-2" value={editForm.registrationNumber} onChange={e => setEditForm({...editForm, registrationNumber: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Seating Capacity</label>
+                <input type="number" min="1" max="10" required className="input-field py-2" value={editForm.seatingCapacity} onChange={e => setEditForm({...editForm, seatingCapacity: e.target.value})} />
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 btn-secondary py-2">Cancel</button>
+                <button type="submit" disabled={editLoading} className="flex-1 btn-primary py-2 flex justify-center items-center">
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {showViewModal && viewVehicle && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Vehicle Details</h2>
+            <div className="space-y-3 text-sm">
+              <p><span className="font-semibold w-24 inline-block text-slate-500">ID:</span> #{viewVehicle.id}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Model:</span> {viewVehicle.model}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Registration:</span> {viewVehicle.registrationNumber}</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Capacity:</span> {viewVehicle.seatingCapacity} seats</p>
+              <p><span className="font-semibold w-24 inline-block text-slate-500">Owner ID:</span> #{viewVehicle.userId}</p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setShowViewModal(false)} className="btn-secondary py-2 px-4">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
