@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { rideService } from '../../services/rideService';
 import { tripService } from '../../services/tripService';
-import { MapPin, Clock, Users, Play, CheckCircle2, CheckSquare, Car } from 'lucide-react';
+import { MapPin, Clock, Users, Play, CheckCircle2, CheckSquare, Car, CarFront } from 'lucide-react';
 
 const ActiveRides = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [otpInputs, setOtpInputs] = useState({});
@@ -107,9 +109,12 @@ const ActiveRides = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Active Rides</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your published rides and verify colleagues.</p>
+      <div className="flex-1">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+            <CarFront className="w-6 h-6 mr-3 text-primary-500" />
+            {user?.firstName}'s Active Rides
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage rides you are currently offering as a driver.</p>
       </div>
 
       <div className="space-y-6">

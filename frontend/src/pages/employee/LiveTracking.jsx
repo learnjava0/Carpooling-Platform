@@ -1,346 +1,174 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { MapPin, Navigation, ArrowLeft, Phone, MessageSquare, Clock } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { MapPin, Navigation, ArrowLeft, Phone, MessageSquare, Clock } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 
-// Fix Leaflet marker icons in React
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import carIconPng from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
+const carIcon = new L.Icon({
+  iconUrl: carIconPng,
   shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
 });
 
-// Helper component to recenter map when position changes
-function ChangeView({ center, zoom }) {
+function ChangeView({ center }) {
   const map = useMap();
   useEffect(() => {
     if (center && center[0] !== 0) {
-      map.setView(center, zoom);
+      map.setView(center, 15);
     }
-  }, [center, zoom, map]);
+  }, [center, map]);
   return null;
 }
 
 const LiveTracking = () => {
-  const location = useLocation();
+  const { rideId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const trip = location.state?.trip;
   
-  const [position, setPosition] = useState(null);
-  const [stompClient, setStompClient] = useState(null);
-  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
-  const [eta, setEta] = useState('15 mins');
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
-  const [routePath, setRoutePath] = useState(null);
-  const watchIdRef = useRef(null);
-
-  const isDriver = trip?.ride?.driver?.id === user?.id;
+  const [driverLocation, setDriverLocation] = useState([23.0225, 72.5714]); 
+  const [connectionStatus, setConnectionStatus] = useState("connecting");
+  const [tripDetails, setTripDetails] = useState({
+    driverName: "Loading...",
+    vehicleInfo: "...",
+    eta: "...",
+  });
 
   useEffect(() => {
-    if (!trip) {
-      navigate('/employee');
-      return;
-    }
-
-    const rideId = trip.ride?.id;
-    if (!rideId) return;
-
-    // Connect to STOMP WebSocket
+    // Connect to WebSocket using STOMP over SockJS
     const socket = new SockJS('http://localhost:8080/ws');
     const client = new Client({
       webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      onConnect: () => {
-        setConnectionStatus('Connected');
-        
-        if (!isDriver) {
-          // Passenger: Subscribe to driver's location
-          client.subscribe(`/topic/location/${rideId}`, (message) => {
-            const data = JSON.parse(message.body);
-            setPosition([data.lat, data.lng]);
-          });
-        }
+      debug: function (str) {
+        console.log(str);
       },
-      onDisconnect: () => {
-        setConnectionStatus('Disconnected');
+      onConnect: () => {
+        setConnectionStatus("connected");
+        client.subscribe(`/topic/location/${rideId}`, (message) => {
+          if (message.body) {
+            const data = JSON.parse(message.body);
+            if (data.latitude && data.longitude) {
+              setDriverLocation([data.latitude, data.longitude]);
+            }
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+        setConnectionStatus("error");
       }
     });
 
     client.activate();
-    setStompClient(client);
 
+    // Cleanup on unmount
     return () => {
       client.deactivate();
     };
-  }, [trip, isDriver, navigate]);
-
-  useEffect(() => {
-    if (isDriver && stompClient && stompClient.connected) {
-      // Driver: Watch geolocation and publish to STOMP
-      if ("geolocation" in navigator) {
-        watchIdRef.current = navigator.geolocation.watchPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setPosition([lat, lng]);
-            
-            stompClient.publish({
-              destination: `/app/location/${trip.ride.id}`,
-              body: JSON.stringify({ lat, lng })
-            });
-          },
-          (err) => {
-            console.error("Geolocation error:", err);
-            alert("Please allow location access to share your live location.");
-          },
-          { enableHighAccuracy: true, maximumAge: 0 }
-        );
-      } else {
-        alert("Geolocation is not supported by your browser");
-      }
-    }
-
-    return () => {
-      if (watchIdRef.current) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-    };
-  }, [isDriver, stompClient, trip]);
-
-  // Fetch realistic route (Rapido style)
-  useEffect(() => {
-    if (!trip) return;
-    const fetchRoute = async () => {
-      try {
-        // Simple geocoding for demo (In production, backend should provide exact lat/lng)
-        const getCoords = async (query) => {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-          const data = await res.json();
-          if (data && data.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-          return null;
-        };
-        
-        const start = await getCoords(trip.ride.pickupLocation + ", India");
-        const end = await getCoords(trip.ride.destination + ", India");
-        
-        if (start && end) {
-          // Default start position to pickup if driver hasn't sent anything
-          if (!position) setPosition([start.lat, start.lon]);
-
-          // Fetch OSRM route
-          const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${start.lon},${start.lat};${end.lon},${end.lat}?geometries=geojson`);
-          const osrmData = await osrmRes.json();
-          
-          if (osrmData.routes && osrmData.routes.length > 0) {
-            // OSRM returns [lng, lat], we need [lat, lng] for Leaflet
-            const coords = osrmData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-            setRoutePath(coords);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching route:", err);
-      }
-    };
-    fetchRoute();
-  }, [trip]);
-
-  // Simulate moving along the actual road path
-  useEffect(() => {
-    if (simulationActive && isDriver && stompClient && stompClient.connected && routePath) {
-      let index = 0;
-      setPosition(routePath[0]);
-      
-      const interval = setInterval(() => {
-        if (index < routePath.length - 1) {
-          index++;
-          const currentPos = routePath[index];
-          setPosition(currentPos);
-          stompClient.publish({
-            destination: `/app/location/${trip.ride.id}`,
-            body: JSON.stringify({ lat: currentPos[0], lng: currentPos[1] })
-          });
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [simulationActive, isDriver, stompClient, trip, routePath]);
-
-  // Demo Mode for Passenger (if they don't want to open two windows)
-  useEffect(() => {
-    if (demoMode && !isDriver && routePath) {
-      let index = 0;
-      setPosition(routePath[0]);
-      setConnectionStatus('Demo Mode Active');
-      
-      const interval = setInterval(() => {
-         if (index < routePath.length - 1) {
-          index++;
-          setPosition(routePath[index]);
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [demoMode, isDriver, routePath]);
-
-  // Simulate ETA decreasing over time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setEta(prev => {
-        const mins = parseInt(prev) - 1;
-        return mins > 0 ? `${mins} mins` : 'Arriving now';
-      });
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!trip) return null;
+  }, [rideId]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 h-[calc(100vh-100px)] flex flex-col">
-      <div className="flex justify-between items-center shrink-0">
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
-        </button>
-        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-          connectionStatus === 'Connected' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-        }`}>
-          {connectionStatus}
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm">
+        <div className="flex items-center space-x-4">
+          <button onClick={() => navigate('/employee/my-trips')} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
+              Live Tracking
+              <span className={`ml-3 text-xs font-semibold px-2.5 py-0.5 rounded-full ${connectionStatus === 'connected' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
+                {connectionStatus === 'connected' ? 'Live' : 'Connecting...'}
+              </span>
+            </h1>
+            <p className="text-sm text-slate-500">Ride #{rideId}</p>
+          </div>
         </div>
       </div>
 
-      <div className="card p-4 shrink-0 flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
-            <Navigation className="w-5 h-5 mr-2 text-primary-500" />
-            {isDriver ? 'Broadcasting Location' : 'Tracking Ride'}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {isDriver 
-              ? "Your live location is being securely shared with your passenger." 
-              : `Tracking ${trip.ride?.driver?.firstName}'s vehicle in real-time.`}
-          </p>
-        </div>
-        {isDriver && (
-          <button 
-            onClick={() => setSimulationActive(!simulationActive)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              simulationActive ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {simulationActive ? 'Stop Simulation' : 'Simulate GPS'}
-          </button>
-        )}
-        {!isDriver && (
-          <button 
-            onClick={() => setDemoMode(!demoMode)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              demoMode ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {demoMode ? 'Stop Demo' : 'Force Demo Mode'}
-          </button>
-        )}
-      </div>
-
-      <div className="card p-0 overflow-hidden flex-1 relative rounded-xl border border-slate-200 dark:border-slate-700">
-        {!position && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 z-10">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
-              <p className="text-slate-500 dark:text-slate-400">
-                {isDriver ? 'Acquiring GPS Signal...' : 'Waiting for Driver Location...'}
-              </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Map Container */}
+        <div className="lg:col-span-2 card p-2 h-[600px] flex flex-col relative z-0">
+          <div className="absolute top-4 left-4 z-[1000] bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center space-x-2 text-primary-600 dark:text-primary-400 font-semibold">
+              <Navigation className="w-5 h-5" />
+              <span>Driver is on the way</span>
+            </div>
+            <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Updating in real-time
             </div>
           </div>
-        )}
-        
-        {/* Leaflet Map */}
-        <MapContainer 
-          center={position || [28.7041, 77.1025]} // Default to Delhi if no position
-          zoom={15} 
-          style={{ height: '100%', width: '100%', zIndex: 1 }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {position && (
-            <>
-              {routePath && (
-                <Polyline 
-                  positions={routePath} 
-                  color="#3b82f6" 
-                  weight={5} 
-                  opacity={0.7} 
-                  dashArray="10, 10" 
-                />
-              )}
-              <Marker position={position}>
-                <Popup>
-                  {isDriver ? "You are here" : "Driver is here"}
-                </Popup>
+          
+          <div className="flex-1 rounded-xl overflow-hidden relative">
+            <MapContainer 
+              center={driverLocation} 
+              zoom={15} 
+              style={{ height: '100%', width: '100%' }}
+            >
+              <ChangeView center={driverLocation} />
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={driverLocation} icon={carIcon}>
+                <Popup>Driver's current location</Popup>
               </Marker>
-              <ChangeView center={position} zoom={15} />
-            </>
-          )}
-        </MapContainer>
+            </MapContainer>
+          </div>
+        </div>
 
-        {/* ETA Overlay Card */}
-        {position && (
-          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 z-[1000]">
-            <div className="flex items-center justify-between mb-2">
+        {/* Ride Info Sidebar */}
+        <div className="space-y-6">
+          <div className="card p-6">
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4">Driver Details</h3>
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold text-xl border-4 border-white dark:border-slate-800 shadow-sm">
+                D
+              </div>
               <div>
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Estimated Time</div>
-                <div className="text-2xl font-bold text-primary-600 dark:text-primary-400 flex items-center">
-                  <Clock className="w-5 h-5 mr-2" />
-                  {eta}
-                </div>
-                <div className="flex space-x-2 mt-2">
-                  <button 
-                    onClick={() => navigate('/employee/chat', { state: { trip } })}
-                    className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors"
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center hover:bg-green-200 transition-colors">
-                    <Phone className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Destination</div>
-                <div className="text-sm font-semibold text-slate-900 dark:text-white truncate max-w-[120px]">
-                  {trip.ride?.destination}
-                </div>
+                <div className="font-semibold text-lg text-slate-900 dark:text-white">{tripDetails.driverName}</div>
+                <div className="text-sm text-slate-500">{tripDetails.vehicleInfo}</div>
               </div>
             </div>
-            
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-3 overflow-hidden">
-              <div className="bg-primary-500 h-1.5 rounded-full w-2/3 animate-pulse"></div>
-            </div>
-            
-            <div className="mt-3 text-xs text-center text-slate-500">
-              {isDriver ? 'Navigating to destination...' : 'Driver is en route to you.'}
+
+            <div className="flex space-x-3">
+              <button className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center">
+                <Phone className="w-4 h-4 mr-2" /> Call
+              </button>
+              <button className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 mr-2" /> Chat
+              </button>
             </div>
           </div>
-        )}
+          
+          <div className="card p-6">
+             <h3 className="font-bold text-slate-900 dark:text-white mb-4">Trip Progress</h3>
+             <div className="relative pl-6 space-y-6 before:absolute before:inset-y-0 before:left-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
+               
+               <div className="relative z-10">
+                 <div className="absolute -left-[1.35rem] w-4 h-4 rounded-full bg-primary-500 border-4 border-white dark:border-slate-800 shadow-sm"></div>
+                 <div className="font-semibold text-slate-900 dark:text-white">Current Location</div>
+                 <div className="text-sm text-slate-500 mt-0.5">Tracking live...</div>
+               </div>
+               
+               <div className="relative z-10">
+                 <div className="absolute -left-[1.35rem] w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-600 border-4 border-white dark:border-slate-800 shadow-sm"></div>
+                 <div className="font-semibold text-slate-900 dark:text-white">Destination</div>
+                 <div className="text-sm text-slate-500 mt-0.5">Arriving soon</div>
+               </div>
+               
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   );

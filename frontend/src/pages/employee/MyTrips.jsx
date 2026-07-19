@@ -4,7 +4,8 @@ import { tripService } from '../../services/tripService';
 import { paymentService } from '../../services/paymentService';
 import { rideService } from '../../services/rideService';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, Clock, CreditCard, CheckCircle2, AlertCircle, RefreshCw, Car, User } from 'lucide-react';
+import { MapPin, Clock, CreditCard, CheckCircle2, AlertCircle, RefreshCw, Car, User, Map } from 'lucide-react';
+import TripMapModal from '../../components/TripMapModal';
 
 const MyTrips = () => {
   const { user } = useAuth();
@@ -15,6 +16,7 @@ const MyTrips = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paymentStatus, setPaymentStatus] = useState({ tripId: null, status: '', message: '' });
+  const [mapTrip, setMapTrip] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -110,8 +112,8 @@ const MyTrips = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">My Trips & Rides</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your upcoming rides, past payments, and hosted journeys.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{user?.firstName}'s Trips</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Track and manage your upcoming carpool rides.</p>
       </div>
 
       <div className="flex border-b border-slate-200 dark:border-slate-700">
@@ -170,7 +172,7 @@ const MyTrips = () => {
 
             <div className="flex-1 space-y-4 mb-6">
               <div className="flex items-start">
-                <div className="flex flex-col items-center mr-4">
+                <div className="flex flex-col items-center mr-4 mt-1">
                   <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600"></div>
                   <div className="w-0.5 h-8 bg-slate-200 dark:bg-slate-700 my-1"></div>
                   <div className="w-3 h-3 rounded-full border-2 border-primary-500 bg-white dark:bg-slate-800"></div>
@@ -182,8 +184,11 @@ const MyTrips = () => {
                       <Clock className="w-3 h-3 mr-1" /> {new Date(trip.ride?.departureTime).toLocaleDateString()} {new Date(trip.ride?.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
                   </div>
-                  <div>
+                  <div className="flex justify-between items-center">
                     <div className="text-sm font-medium text-slate-900 dark:text-white">{trip.ride?.destination}</div>
+                    <button onClick={() => setMapTrip(trip)} className="flex items-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 dark:bg-slate-800 px-3 py-1.5 rounded-full transition-colors">
+                      <Map className="w-3 h-3 mr-1" /> View Map
+                    </button>
                   </div>
                 </div>
               </div>
@@ -270,8 +275,13 @@ const MyTrips = () => {
               <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
                 <div>
                   <div className="font-semibold text-slate-900 dark:text-white">Route: {ride.pickupLocation} to {ride.destination}</div>
-                  <div className="text-sm font-medium mt-1">
-                    Status: <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{ride.status}</span>
+                  <div className="text-sm font-medium mt-1 flex justify-between items-center w-full">
+                    <div>
+                      Status: <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{ride.status}</span>
+                    </div>
+                    <button onClick={() => setMapTrip(ride)} className="flex items-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 dark:bg-slate-800 px-3 py-1.5 rounded-full transition-colors ml-4 mt-2">
+                      <Map className="w-3 h-3 mr-1" /> View Map
+                    </button>
                   </div>
                 </div>
                 <div className="text-right">
@@ -300,6 +310,11 @@ const MyTrips = () => {
           )}
         </div>
       )}
+      <TripMapModal 
+        isOpen={!!mapTrip} 
+        trip={mapTrip} 
+        onClose={() => setMapTrip(null)} 
+      />
     </div>
   );
 };

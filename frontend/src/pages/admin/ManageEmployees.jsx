@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
-import { Users, UserPlus, Search, Building2, CheckCircle2 } from 'lucide-react';
+import { Users, UserPlus, Search, Building2, Trash2 } from 'lucide-react';
 
 const ManageEmployees = () => {
   const [employees, setEmployees] = useState([]);
@@ -36,7 +36,6 @@ const ManageEmployees = () => {
     e.preventDefault();
     setOnboardLoading(true);
     try {
-      // use auth register but done by admin (this requires bypassing or adapting, we'll just call the service)
       await adminService.onboardDriver(onboardForm);
       setShowOnboardModal(false);
       fetchEmployees();
@@ -45,6 +44,25 @@ const ManageEmployees = () => {
       console.error('Failed to onboard employee:', error);
     } finally {
       setOnboardLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+    try {
+      await adminService.deleteEmployee(id);
+      fetchEmployees();
+    } catch (error) {
+      alert("Failed to delete employee.");
+    }
+  };
+
+  const handleRoleChange = async (id, newRole) => {
+    try {
+      await adminService.updateEmployeeRole(id, newRole);
+      fetchEmployees();
+    } catch (error) {
+      alert("Failed to update role.");
     }
   };
 
@@ -96,6 +114,7 @@ const ManageEmployees = () => {
                   <th className="py-3 px-4 text-sm font-semibold text-slate-600">Contact Info</th>
                   <th className="py-3 px-4 text-sm font-semibold text-slate-600">Role</th>
                   <th className="py-3 px-4 text-sm font-semibold text-slate-600">Company</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-slate-600 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -114,9 +133,14 @@ const ManageEmployees = () => {
                       <div className="text-xs text-slate-500">{emp.phoneNumber}</div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${emp.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                        {emp.role}
-                      </span>
+                      <select 
+                        value={emp.role} 
+                        onChange={(e) => handleRoleChange(emp.id, e.target.value)}
+                        className={`text-xs font-semibold rounded-md px-2 py-1 outline-none appearance-none cursor-pointer ${emp.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}
+                      >
+                        <option value="EMPLOYEE">EMPLOYEE</option>
+                        <option value="ADMIN">ADMIN</option>
+                      </select>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center text-sm text-slate-600">
@@ -124,11 +148,16 @@ const ManageEmployees = () => {
                         {emp.companyName}
                       </div>
                     </td>
+                    <td className="py-3 px-4 text-right">
+                      <button onClick={() => handleDelete(emp.id)} className="text-red-500 hover:text-red-700 p-1 rounded transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filteredEmployees.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="py-8 text-center text-slate-500">
+                    <td colSpan="5" className="py-8 text-center text-slate-500">
                       No employees found.
                     </td>
                   </tr>

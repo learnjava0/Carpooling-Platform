@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { rideService } from '../../services/rideService';
 import { vehicleService } from '../../services/vehicleService';
 import { MapPin, Calendar, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 
 const PublishRide = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     pickupLocation: '',
     destination: '',
@@ -66,7 +68,7 @@ const PublishRide = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Publish a Ride</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Hi {user?.firstName}, Publish a Ride</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Offer empty seats to your colleagues and share travel costs.</p>
       </div>
 

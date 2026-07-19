@@ -97,6 +97,12 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/vehicles/{vehicleId}")
+    public ResponseEntity<Void> deleteVehicle(@PathVariable Long vehicleId) {
+        vehicleRepository.deleteById(vehicleId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/dashboard/stats")
     public ResponseEntity<Map<String, Long>> getDashboardStats() {
         long totalUsers = userRepository.count();

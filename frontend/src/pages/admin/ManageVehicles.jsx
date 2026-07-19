@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
-import { Car, Search, Hash, Users, Edit } from 'lucide-react';
+import { Car, Search, Hash, Users, Edit, Trash2 } from 'lucide-react';
 
 const ManageVehicles = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -19,6 +19,16 @@ const ManageVehicles = () => {
       console.error('Failed to fetch vehicles:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
+    try {
+      await adminService.deleteVehicle(id);
+      fetchVehicles();
+    } catch (error) {
+      alert("Failed to delete vehicle.");
     }
   };
 
@@ -75,7 +85,12 @@ const ManageVehicles = () => {
                   <div className="text-xs text-slate-500">
                     Owned by ID: <span className="font-semibold text-slate-900">#{vehicle.userId}</span>
                   </div>
-                  <button className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">View Details</button>
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleDelete(vehicle.id)} className="text-sm font-medium text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors py-1">View Details</button>
+                  </div>
                 </div>
               </div>
             ))}

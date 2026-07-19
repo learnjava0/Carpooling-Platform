@@ -92,8 +92,8 @@ public class AdminRideService {
                                 .build())
                         .bookedSeats(trip.getBookedSeats())
                         .totalFare(trip.getTotalFare())
-                        .status(trip.getStatus().name())
-                        .build()).collect(Collectors.toList()) : null)
+                        .status(trip.getStatus())
+                        .build()).collect(Collectors.toList()) : java.util.Collections.emptyList())
                 .build();
     }
 }
