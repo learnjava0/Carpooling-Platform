@@ -7,6 +7,7 @@ import com.odoohackathon.odoohackathon.domain.user.entity.User;
 import com.odoohackathon.odoohackathon.domain.user.repository.CompanyRepository;
 import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
 import com.odoohackathon.odoohackathon.domain.vehicle.dto.VehicleDTO;
+import com.odoohackathon.odoohackathon.domain.vehicle.dto.VehicleRequest;
 import com.odoohackathon.odoohackathon.domain.vehicle.entity.Vehicle;
 import com.odoohackathon.odoohackathon.domain.vehicle.repository.VehicleRepository;
 import com.odoohackathon.odoohackathon.domain.trip.repository.TripRepository;
@@ -95,6 +96,47 @@ public class AdminController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         userRepository.deleteById(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/vehicles/{vehicleId}")
+    public ResponseEntity<Void> deleteVehicle(@PathVariable Long vehicleId) {
+        vehicleRepository.deleteById(vehicleId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable Long userId,
+            @RequestBody UserDTO request
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            user.setEmail(request.getEmail());
+        }
+        
+        userRepository.save(user);
+        return ResponseEntity.ok(mapUserToDto(user));
+    }
+
+    @PutMapping("/vehicles/{vehicleId}")
+    public ResponseEntity<VehicleDTO> updateVehicle(
+            @PathVariable Long vehicleId,
+            @RequestBody VehicleRequest request
+    ) {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+        
+        vehicle.setModel(request.getModel());
+        vehicle.setRegistrationNumber(request.getRegistrationNumber());
+        vehicle.setSeatingCapacity(request.getSeatingCapacity());
+        
+        vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(mapVehicleToDto(vehicle));
     }
 
     @GetMapping("/dashboard/stats")

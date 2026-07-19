@@ -8,5 +8,9 @@ export const vehicleService = {
   registerVehicle: async (vehicleData) => {
     const response = await api.post('/vehicles', vehicleData);
     return response.data;
+  },
+  updateVehicle: async (id, vehicleData) => {
+    const response = await api.put(`/vehicles/${id}`, vehicleData);
+    return response.data;
   }
 };

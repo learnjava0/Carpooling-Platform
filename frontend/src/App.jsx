@@ -21,6 +21,7 @@ import SavedPlaces from './pages/employee/SavedPlaces';
 import Chat from './pages/employee/Chat';
 import AdminDashboard from './pages/employee/AdminDashboard';
 import LiveTracking from './pages/employee/LiveTracking';
+import Analytics from './pages/employee/Analytics';
 import SplashScreen from './pages/SplashScreen';
 // Placeholders for remaining features
 const ManageUsers = () => <div className="p-8"><h1>Manage Users (Coming Soon)</h1></div>;
@@ -68,6 +69,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<DashboardOverview />} />
+            <Route path="logs" element={<AdminDashboard />} />
             <Route path="employees" element={<ManageEmployees />} />
             <Route path="vehicles" element={<ManageVehicles />} />
             <Route path="settings" element={<PlatformSettings />} />
@@ -80,9 +82,10 @@ function App() {
           }>
             <Route index element={<DiscoverRides />} />
             <Route path="trips" element={<MyTrips />} />
-          <Route path="saved-places" element={<SavedPlaces />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="admin" element={<AdminDashboard />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="saved-places" element={<SavedPlaces />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="admin" element={<AdminDashboard />} />
             <Route path="active-rides" element={<ActiveRides />} />
             <Route path="publish" element={<PublishRide />} />
             <Route path="vehicles" element={<MyVehicles />} />

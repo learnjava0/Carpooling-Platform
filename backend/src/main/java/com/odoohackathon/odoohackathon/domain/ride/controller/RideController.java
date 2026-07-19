@@ -1,5 +1,4 @@
 package com.odoohackathon.odoohackathon.domain.ride.controller;
-
 import com.odoohackathon.odoohackathon.domain.ride.dto.RideDTO;
 import com.odoohackathon.odoohackathon.domain.ride.dto.RideRequest;
 import com.odoohackathon.odoohackathon.domain.ride.service.RideService;
@@ -34,14 +33,28 @@ public class RideController {
             @RequestParam String pickupLocation,
             @RequestParam String destination,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime departureTime,
-            @RequestParam int seats
-    ) {
+            @RequestParam(defaultValue = "1") int seats) {
         return ResponseEntity.ok(rideService.searchRides(pickupLocation, destination, departureTime, seats));
+    }
+
+    @GetMapping("/locations")
+    public ResponseEntity<java.util.Map<String, List<String>>> getAvailableLocations() {
+        return ResponseEntity.ok(rideService.getAvailableLocations());
     }
 
     @GetMapping("/me")
     public ResponseEntity<List<RideDTO>> getMyRides(Authentication authentication) {
         String userEmail = authentication.getName();
         return ResponseEntity.ok(rideService.getDriverRides(userEmail));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RideDTO> updateMyRide(
+            @PathVariable Long id,
+            @RequestBody RideRequest request,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        return ResponseEntity.ok(rideService.updateMyRide(id, userEmail, request));
     }
 }

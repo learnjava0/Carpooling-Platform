@@ -108,7 +108,7 @@ const Register = () => {
                     name="firstName"
                     type="text"
                     required
-                    className="input pl-10 w-full"
+                    className="input-field pl-10"
                     placeholder="John"
                     value={formData.firstName}
                     onChange={handleChange}
@@ -125,7 +125,7 @@ const Register = () => {
                     name="lastName"
                     type="text"
                     required
-                    className="input pl-10 w-full"
+                    className="input-field pl-10"
                     placeholder="Doe"
                     value={formData.lastName}
                     onChange={handleChange}
@@ -144,7 +144,7 @@ const Register = () => {
                   name="email"
                   type="email"
                   required
-                  className="input pl-10 w-full"
+                  className="input-field pl-10"
                   placeholder="name@company.com"
                   value={formData.email}
                   onChange={handleChange}
@@ -162,7 +162,7 @@ const Register = () => {
                   name="phoneNumber"
                   type="tel"
                   required
-                  className="input pl-10 w-full"
+                  className="input-field pl-10"
                   placeholder="+91 9876543210"
                   value={formData.phoneNumber}
                   onChange={handleChange}
@@ -180,7 +180,7 @@ const Register = () => {
                   name="password"
                   type="password"
                   required
-                  className="input pl-10 w-full"
+                  className="input-field pl-10"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
@@ -191,14 +191,14 @@ const Register = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn btn-primary w-full h-12 flex items-center justify-center text-lg mt-8"
+              className="btn-primary w-full py-3.5 flex items-center justify-center space-x-2 mt-8"
             >
               {isLoading ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               ) : (
                 <>
-                  Create Account
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <span>Create Account</span>
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>

@@ -25,6 +25,7 @@ public class RideDTO {
     private LocalDateTime departureTime;
     private int availableSeats;
     private BigDecimal farePerSeat;
+    private String routeWaypoints;
 
     @JsonIgnoreProperties("ride")
     private List<TripDTO> trips;

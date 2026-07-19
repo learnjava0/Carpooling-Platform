@@ -1,6 +1,5 @@
 package com.odoohackathon.odoohackathon.domain.trip.service;
 
-import com.odoohackathon.odoohackathon.domain.ride.dto.RideDTO;
 import com.odoohackathon.odoohackathon.domain.ride.entity.Ride;
 import com.odoohackathon.odoohackathon.domain.ride.repository.RideRepository;
 import com.odoohackathon.odoohackathon.domain.trip.dto.TripDTO;
@@ -11,7 +10,6 @@ import com.odoohackathon.odoohackathon.domain.trip.repository.TripRepository;
 import com.odoohackathon.odoohackathon.domain.user.dto.UserDTO;
 import com.odoohackathon.odoohackathon.domain.user.entity.User;
 import com.odoohackathon.odoohackathon.domain.user.repository.UserRepository;
-import com.odoohackathon.odoohackathon.domain.vehicle.dto.VehicleDTO;
 import com.odoohackathon.odoohackathon.domain.notification.service.TwilioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -190,7 +188,7 @@ public class TripService {
                         .email(trip.getPassenger().getEmail())
                         .phoneNumber(trip.getPassenger().getPhoneNumber())
                         .build())
-                .ride(RideDTO.builder()
+                .ride(com.odoohackathon.odoohackathon.domain.ride.dto.RideDTO.builder()
                         .id(trip.getRide().getId())
                         .pickupLocation(trip.getRide().getPickupLocation())
                         .destination(trip.getRide().getDestination())
@@ -199,11 +197,8 @@ public class TripService {
                         .driver(UserDTO.builder()
                                 .firstName(trip.getRide().getDriver().getFirstName())
                                 .lastName(trip.getRide().getDriver().getLastName())
+                                .email(trip.getRide().getDriver().getEmail())
                                 .phoneNumber(trip.getRide().getDriver().getPhoneNumber())
-                                .build())
-                        .vehicle(VehicleDTO.builder()
-                                .model(trip.getRide().getVehicle().getModel())
-                                .registrationNumber(trip.getRide().getVehicle().getRegistrationNumber())
                                 .build())
                         .build())
                 .build();

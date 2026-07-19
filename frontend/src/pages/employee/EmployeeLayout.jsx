@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Search, MapPin, LogOut, Car, History, PlusCircle, CarFront, Settings, UserCircle, ShieldCheck } from 'lucide-react';
+import { Search, MapPin, LogOut, Car, History, PlusCircle, CarFront, Settings, UserCircle, ShieldCheck, BarChart3 } from 'lucide-react';
 
 const EmployeeLayout = () => {
   const { logout, user } = useAuth();

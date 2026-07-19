@@ -47,7 +47,13 @@ public class PaymentService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Wallet wallet = walletRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
+                .orElseGet(() -> {
+                    Wallet newWallet = Wallet.builder()
+                            .user(user)
+                            .balance(BigDecimal.ZERO)
+                            .build();
+                    return walletRepository.save(newWallet);
+                });
         return mapToDto(wallet);
     }
 
@@ -57,7 +63,13 @@ public class PaymentService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Wallet wallet = walletRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
+                .orElseGet(() -> {
+                    Wallet newWallet = Wallet.builder()
+                            .user(user)
+                            .balance(BigDecimal.ZERO)
+                            .build();
+                    return walletRepository.save(newWallet);
+                });
 
         wallet.setBalance(wallet.getBalance().add(request.getAmount()));
         wallet = walletRepository.save(wallet);
@@ -114,6 +126,15 @@ public class PaymentService {
         Trip trip = tripRepository.findById(request.getTripId())
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
 
+        Wallet passengerWallet = walletRepository.findByUserId(passenger.getId())
+                .orElseGet(() -> {
+                    Wallet newWallet = Wallet.builder()
+                            .user(passenger)
+                            .balance(BigDecimal.ZERO)
+                            .build();
+                    return walletRepository.save(newWallet);
+                });
+
         if (!trip.getPassenger().getId().equals(passenger.getId())) {
             throw new IllegalArgumentException("You can only pay for your own trips");
         }
@@ -122,8 +143,6 @@ public class PaymentService {
             throw new IllegalArgumentException("Trip is not ready for payment");
         }
 
-        Wallet passengerWallet = walletRepository.findByUserId(passenger.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
 
         if ("WALLET".equalsIgnoreCase(request.getPaymentMethod())) {
             if (passengerWallet.getBalance().compareTo(trip.getTotalFare()) < 0) {
@@ -188,6 +207,25 @@ public class PaymentService {
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void logFailedPayment(String userEmail, PaymentRequest request) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Wallet wallet = walletRepository.findByUserId(user.getId()).orElse(null);
+        if (wallet == null) return;
+        
+        PaymentTransaction transaction = PaymentTransaction.builder()
+                .wallet(wallet)
+                .amount(request.getAmount())
+                .paymentMethod("RAZORPAY")
+                .transactionType(request.getTripId() != null ? "TRIP_PAYMENT" : "RECHARGE")
+                .status("FAILED")
+                .build();
+        transactionRepository.save(transaction);
+        
+        auditService.logEvent("PAYMENT_FAILED", userEmail, "Failed or cancelled payment of " + request.getAmount(), "IP_NOT_CAPTURED");
     }
 
     private WalletDTO mapToDto(Wallet wallet) {

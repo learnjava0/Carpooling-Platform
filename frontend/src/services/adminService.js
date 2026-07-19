@@ -22,7 +22,32 @@ export const adminService = {
   },
 
   onboardDriver: async (driverData) => {
-    const response = await api.post('/auth/register', driverData); // use auth register since everyone is an employee
+    const response = await api.post('/auth/register', driverData);
+    return response.data;
+  },
+
+  deleteEmployee: async (id) => {
+    const response = await api.delete(`/admin/users/${id}`);
+    return response.data;
+  },
+
+  updateEmployeeRole: async (id, role) => {
+    const response = await api.put(`/admin/users/${id}/role?role=${role}`);
+    return response.data;
+  },
+
+  updateEmployee: async (id, employeeData) => {
+    const response = await api.put(`/admin/users/${id}`, employeeData);
+    return response.data;
+  },
+
+  updateVehicle: async (id, vehicleData) => {
+    const response = await api.put(`/admin/vehicles/${id}`, vehicleData);
+    return response.data;
+  },
+
+  deleteVehicle: async (id) => {
+    const response = await api.delete(`/admin/vehicles/${id}`);
     return response.data;
   }
 };

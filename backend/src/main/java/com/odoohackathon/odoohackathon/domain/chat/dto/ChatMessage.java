@@ -16,5 +16,6 @@ public class ChatMessage {
     private String senderName;
     private String senderEmail;
     private String message;
+    @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 }

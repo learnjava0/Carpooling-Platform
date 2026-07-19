@@ -32,10 +32,18 @@ export const paymentService = {
     return response.data;
   },
 
+  logFailedPayment: async (paymentData) => {
+    try {
+      await api.post('/payments/log-failure', paymentData);
+    } catch (e) {
+      console.error('Failed to log payment failure', e);
+    }
+  },
+
   openRazorpayWidget: (orderData, user, onSuccess, onError) => {
     const options = {
       key: 'rzp_test_TEtkcWeUnkc6xQ', // Provided Razorpay Key
-      amount: orderData.amount,
+      amount: Math.round(orderData.amount * 100), // Razorpay expects amount in paise
       currency: orderData.currency,
       name: 'RideConnect Carpooling',
       description: 'Trip Payment',
@@ -63,11 +71,18 @@ export const paymentService = {
       },
       theme: {
         color: '#0ea5e9' // Primary color
+      },
+      modal: {
+        ondismiss: function() {
+          paymentService.logFailedPayment({ amount: orderData.amount / 100, paymentMethod: 'RAZORPAY', purpose: orderData.purpose, tripId: orderData.tripId });
+          onError(new Error('Payment window closed by user'));
+        }
       }
     };
 
     const rzp = new window.Razorpay(options);
     rzp.on('payment.failed', function (response){
+      paymentService.logFailedPayment({ amount: orderData.amount / 100, paymentMethod: 'RAZORPAY', purpose: orderData.purpose, tripId: orderData.tripId });
       onError(response.error);
     });
     rzp.open();

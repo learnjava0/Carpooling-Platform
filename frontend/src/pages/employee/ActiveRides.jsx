@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { rideService } from '../../services/rideService';
 import { tripService } from '../../services/tripService';
-import { MapPin, Clock, Users, Play, CheckCircle2, CheckSquare, Car } from 'lucide-react';
+import { MapPin, Clock, Users, Play, CheckCircle2, CheckSquare, Car, CarFront, Search } from 'lucide-react';
 
 const ActiveRides = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [otpInputs, setOtpInputs] = useState({});
   const [status, setStatus] = useState({ id: null, message: '', type: '' });
+  const [editingRide, setEditingRide] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [locationFilter, setLocationFilter] = useState('');
 
   const fetchRides = async () => {
     setLoading(true);
@@ -80,35 +85,110 @@ const ActiveRides = () => {
     }
   };
 
+  const handleEditRide = (ride) => {
+    setEditingRide(ride.id);
+    setEditFormData({
+      pickupLocation: ride.pickupLocation,
+      destination: ride.destination,
+      departureTime: ride.departureTime,
+      farePerSeat: ride.farePerSeat,
+      routeWaypoints: ride.routeWaypoints || ''
+    });
+  };
+
+  const handleSaveRide = async (id) => {
+    try {
+      await rideService.updateMyRide(id, editFormData);
+      setEditingRide(null);
+      fetchRides();
+    } catch (err) {
+      console.error('Failed to save ride', err);
+    }
+  };
+
+  const filteredRides = rides.filter(ride => {
+    if (!locationFilter) return true;
+    const filterLower = locationFilter.toLowerCase();
+    return (
+      (ride.pickupLocation && ride.pickupLocation.toLowerCase().includes(filterLower)) ||
+      (ride.destination && ride.destination.toLowerCase().includes(filterLower))
+    );
+  });
+
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div></div>;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Active Rides</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your published rides and verify colleagues.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+            <CarFront className="w-6 h-6 mr-2 text-primary-500" />
+            {user?.firstName}'s Active Rides
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage rides you are currently offering as a driver.</p>
+        </div>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            className="input-field pl-10 py-2 w-full sm:w-64"
+            placeholder="Filter by location..."
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="space-y-6">
-        {rides.map(ride => (
+        {filteredRides.map(ride => (
           <div key={ride.id} className="card p-0 overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50">
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="flex items-center text-slate-900 dark:text-white font-semibold">
-                    <MapPin className="w-4 h-4 mr-2 text-green-500" /> {ride.pickupLocation}
+              {editingRide === ride.id ? (
+                <div className="space-y-4">
+                  <div className="flex space-x-4">
+                    <input type="text" value={editFormData.pickupLocation} onChange={e => setEditFormData({...editFormData, pickupLocation: e.target.value})} className="input-field text-sm flex-1" placeholder="Pickup"/>
+                    <input type="text" value={editFormData.destination} onChange={e => setEditFormData({...editFormData, destination: e.target.value})} className="input-field text-sm flex-1" placeholder="Destination"/>
                   </div>
-                  <div className="flex items-center text-slate-900 dark:text-white font-semibold">
-                    <MapPin className="w-4 h-4 mr-2 text-red-500" /> {ride.destination}
+                  <div className="flex space-x-4">
+                    <input type="datetime-local" value={editFormData.departureTime.slice(0, 16)} onChange={e => setEditFormData({...editFormData, departureTime: e.target.value})} className="input-field text-sm flex-1"/>
+                    <input type="number" value={editFormData.farePerSeat} onChange={e => setEditFormData({...editFormData, farePerSeat: e.target.value})} className="input-field text-sm flex-1" placeholder="Fare"/>
+                    <input type="text" value={editFormData.routeWaypoints} onChange={e => setEditFormData({...editFormData, routeWaypoints: e.target.value})} className="input-field text-sm flex-1" placeholder="Waypoints (stops)"/>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleSaveRide(ride.id)} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium">Save</button>
+                    <button onClick={() => setEditingRide(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Cancel</button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-slate-900 dark:text-white">₹{ride.farePerSeat} <span className="text-sm font-normal text-slate-500">/seat</span></div>
-                  <div className="text-sm text-slate-500 flex items-center justify-end mt-1">
-                    <Clock className="w-3 h-3 mr-1" /> {new Date(ride.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+              ) : (
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                    <div className="flex items-center text-slate-900 dark:text-white font-semibold">
+                      <MapPin className="w-4 h-4 mr-2 text-green-500" /> {ride.pickupLocation}
+                    </div>
+                    <div className="flex items-center text-slate-900 dark:text-white font-semibold">
+                      <MapPin className="w-4 h-4 mr-2 text-red-500" /> {ride.destination}
+                    </div>
+                    {ride.routeWaypoints && (
+                      <div className="text-xs text-slate-500 mt-1 ml-6">
+                        Stops: {ride.routeWaypoints}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="flex justify-end space-x-2 mb-2">
+                       {ride.trips?.length === 0 && (
+                         <button onClick={() => handleEditRide(ride)} className="text-blue-600 hover:underline text-sm font-medium">Edit Ride</button>
+                       )}
+                    </div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">₹{ride.farePerSeat} <span className="text-sm font-normal text-slate-500">/seat</span></div>
+                    <div className="text-sm text-slate-500 flex items-center justify-end mt-1">
+                      <Clock className="w-3 h-3 mr-1" /> {new Date(ride.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="p-6">
@@ -171,7 +251,7 @@ const ActiveRides = () => {
                               <Play className="w-4 h-4 mr-1.5" /> Start
                             </button>
                             <button 
-                              onClick={() => navigate('/employee/track', { state: { trip } })}
+                              onClick={() => navigate(`/employee/track/${ride.id}`, { state: { trip } })}
                               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
                             >
                               <MapPin className="w-4 h-4 mr-1.5" /> Track
@@ -184,7 +264,7 @@ const ActiveRides = () => {
                         ) : trip.status === 'STARTED' ? (
                           <div className="flex space-x-2">
                             <button 
-                              onClick={() => navigate('/employee/track', { state: { trip } })}
+                              onClick={() => navigate(`/employee/track/${ride.id}`, { state: { trip } })}
                               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
                             >
                               <MapPin className="w-4 h-4 mr-1.5" /> Track
@@ -210,10 +290,12 @@ const ActiveRides = () => {
           </div>
         ))}
 
-        {rides.length === 0 && (
-          <div className="col-span-full py-12 text-center text-slate-500 card border-dashed">
-            <Car className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-            <p>You don't have any active rides.</p>
+        {filteredRides.length === 0 && (
+          <div className="bg-white dark:bg-slate-800 p-12 rounded-2xl text-center shadow-sm border border-slate-200 dark:border-slate-700">
+            <Car className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+            <div className="text-slate-500 dark:text-slate-400 text-lg">
+              {locationFilter ? "No active rides found matching your location filter." : "You don't have any active rides."}
+            </div>
           </div>
         )}
       </div>

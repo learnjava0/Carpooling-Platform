@@ -44,6 +44,21 @@ public class VehicleService {
                 .collect(Collectors.toList());
     }
 
+    public VehicleDTO updateVehicle(Long id, String userEmail, VehicleRequest request) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+        
+        if (!vehicle.getOwner().getEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("Unauthorized to edit this vehicle");
+        }
+        
+        vehicle.setModel(request.getModel());
+        vehicle.setRegistrationNumber(request.getRegistrationNumber());
+        vehicle.setSeatingCapacity(request.getSeatingCapacity());
+        
+        return mapToDto(vehicleRepository.save(vehicle));
+    }
+
     private VehicleDTO mapToDto(Vehicle vehicle) {
         return VehicleDTO.builder()
                 .id(vehicle.getId())

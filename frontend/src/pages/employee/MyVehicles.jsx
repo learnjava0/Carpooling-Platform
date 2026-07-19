@@ -12,6 +12,8 @@ const MyVehicles = () => {
     registrationNumber: '',
     seatingCapacity: 4,
   });
+  const [editingVehicle, setEditingVehicle] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
 
   const fetchVehicles = async () => {
     setLoading(true);
@@ -47,6 +49,26 @@ const MyVehicles = () => {
       fetchVehicles();
     } catch (err) {
       setStatus({ type: 'error', message: err.response?.data?.message || 'Failed to register vehicle.' });
+    }
+  };
+
+  const handleEditVehicle = (vehicle) => {
+    setEditingVehicle(vehicle.id);
+    setEditFormData({
+      model: vehicle.model,
+      registrationNumber: vehicle.registrationNumber,
+      seatingCapacity: vehicle.seatingCapacity
+    });
+  };
+
+  const handleSaveVehicle = async (id) => {
+    try {
+      await vehicleService.updateVehicle(id, editFormData);
+      setEditingVehicle(null);
+      fetchVehicles();
+      setStatus({ type: 'success', message: 'Vehicle updated successfully!' });
+    } catch (err) {
+      setStatus({ type: 'error', message: err.response?.data?.message || 'Failed to update vehicle.' });
     }
   };
 
@@ -116,14 +138,31 @@ const MyVehicles = () => {
             <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/20 rounded-full flex items-center justify-center shrink-0">
               <Car className="text-primary-600 dark:text-primary-400 w-6 h-6" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{vehicle.model}</h3>
-              <p className="text-slate-500 font-mono mt-1 uppercase tracking-wider">{vehicle.registrationNumber}</p>
-              <div className="mt-3 flex items-center text-sm text-slate-600 dark:text-slate-400 font-medium">
-                <span className="bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-md">
-                  Capacity: {vehicle.seatingCapacity} seats
-                </span>
-              </div>
+            <div className="flex-1">
+              {editingVehicle === vehicle.id ? (
+                <div className="space-y-3">
+                  <input type="text" value={editFormData.model} onChange={e => setEditFormData({...editFormData, model: e.target.value})} className="input-field text-sm w-full" placeholder="Model"/>
+                  <input type="text" value={editFormData.registrationNumber} onChange={e => setEditFormData({...editFormData, registrationNumber: e.target.value})} className="input-field text-sm w-full uppercase" placeholder="Reg Number"/>
+                  <input type="number" min="1" max="8" value={editFormData.seatingCapacity} onChange={e => setEditFormData({...editFormData, seatingCapacity: e.target.value})} className="input-field text-sm w-full" placeholder="Capacity"/>
+                  <div className="flex space-x-2 pt-2">
+                    <button onClick={() => handleSaveVehicle(vehicle.id)} className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium">Save</button>
+                    <button onClick={() => setEditingVehicle(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{vehicle.model}</h3>
+                    <button onClick={() => handleEditVehicle(vehicle)} className="text-blue-600 hover:underline text-sm font-medium">Edit</button>
+                  </div>
+                  <p className="text-slate-500 font-mono mt-1 uppercase tracking-wider">{vehicle.registrationNumber}</p>
+                  <div className="mt-3 flex items-center text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    <span className="bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-md">
+                      Capacity: {vehicle.seatingCapacity} seats
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))}

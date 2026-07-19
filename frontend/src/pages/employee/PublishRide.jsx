@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { rideService } from '../../services/rideService';
 import { vehicleService } from '../../services/vehicleService';
 import { MapPin, Calendar, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 
 const PublishRide = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     pickupLocation: '',
     destination: '',
     departureTime: '',
     availableSeats: 3,
     farePerSeat: 150,
+    routeWaypoints: '',
   });
 
   const [status, setStatus] = useState({ type: '', message: '' });
@@ -54,7 +57,7 @@ const PublishRide = () => {
         vehicleId: vehicleId
       });
       setStatus({ type: 'success', message: 'Ride successfully published!' });
-      setFormData({ pickupLocation: '', destination: '', departureTime: '', availableSeats: 3, farePerSeat: 150 });
+      setFormData({ pickupLocation: '', destination: '', departureTime: '', availableSeats: 3, farePerSeat: 150, routeWaypoints: '' });
     } catch (err) {
       setStatus({ type: 'error', message: err.response?.data?.message || 'Failed to publish ride.' });
     } finally {
@@ -65,7 +68,7 @@ const PublishRide = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Publish a Ride</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Hi {user?.firstName}, Publish a Ride</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Offer empty seats to your colleagues and share travel costs.</p>
       </div>
 
@@ -95,6 +98,16 @@ const PublishRide = () => {
                 <MapPin className="h-4 w-4 text-slate-400" />
               </div>
               <input type="text" name="destination" value={formData.destination} onChange={handleChange} required className="input-field pl-10 text-sm" placeholder="e.g. Metro Station Sector 21" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">On-The-Way Stops (Optional)</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <MapPin className="h-4 w-4 text-slate-400" />
+              </div>
+              <input type="text" name="routeWaypoints" value={formData.routeWaypoints} onChange={handleChange} className="input-field pl-10 text-sm" placeholder="e.g. Danilimda, SG Highway (comma separated)" />
             </div>
           </div>
 

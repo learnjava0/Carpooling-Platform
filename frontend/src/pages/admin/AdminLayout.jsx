@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, UserPlus, LogOut, Car, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, LogOut, Car, Settings, ShieldCheck } from 'lucide-react';
 
 const AdminLayout = () => {
   const { logout, user } = useAuth();
@@ -14,6 +14,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', end: true, icon: LayoutDashboard },
+    { name: 'Security Logs', path: '/admin/logs', end: false, icon: ShieldCheck },
     { name: 'Manage Employees', path: '/admin/employees', end: false, icon: Users },
     { name: 'Manage Vehicles', path: '/admin/vehicles', end: false, icon: Car },
     { name: 'Settings', path: '/admin/settings', end: false, icon: Settings },

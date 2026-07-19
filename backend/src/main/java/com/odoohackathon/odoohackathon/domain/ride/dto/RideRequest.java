@@ -18,4 +18,5 @@ public class RideRequest {
     private LocalDateTime departureTime;
     private int availableSeats;
     private BigDecimal farePerSeat;
+    private String routeWaypoints;
 }

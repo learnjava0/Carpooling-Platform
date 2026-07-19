@@ -10,16 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.18.1",
+    "html2pdf.js": "^0.14.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-leaflet": "^4.2.1",
     "react-router-dom": "^7.18.1",
     "sockjs-client": "^1.6.1",
-    "@stomp/stompjs": "^7.0.0",
-    "leaflet": "^1.9.4",
-    "react-leaflet": "^4.2.1",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
