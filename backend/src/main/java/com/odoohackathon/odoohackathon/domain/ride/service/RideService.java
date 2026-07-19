@@ -12,6 +12,7 @@ import com.odoohackathon.odoohackathon.domain.vehicle.entity.Vehicle;
 import com.odoohackathon.odoohackathon.domain.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RideService {
 
     private final RideRepository rideRepository;
@@ -136,7 +138,7 @@ public class RideService {
                         .lastName(ride.getDriver().getLastName())
                         .email(ride.getDriver().getEmail())
                         .phoneNumber(ride.getDriver().getPhoneNumber())
-                        .companyName(ride.getDriver().getCompany().getName())
+                        .companyName(ride.getDriver().getCompany() != null ? ride.getDriver().getCompany().getName() : null)
                         .build())
                 .vehicle(VehicleDTO.builder()
                         .id(ride.getVehicle().getId())

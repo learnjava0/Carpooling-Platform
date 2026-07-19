@@ -25,7 +25,11 @@ const MyTrips = () => {
       setTrips(passengerTrips);
       
       const driverRides = await rideService.getDriverRides();
-      setHostedRides(driverRides.filter(r => r.status === 'COMPLETED' || r.status === 'CANCELLED'));
+      setHostedRides(driverRides.filter(r => {
+        const isPast = new Date(r.departureTime) < new Date();
+        const hasActiveTrips = r.trips && r.trips.some(t => !['COMPLETED', 'CANCELLED', 'PAYMENT_COMPLETED'].includes(t.status));
+        return isPast && !hasActiveTrips;
+      }));
     } catch (err) {
       console.error(err);
       setError('Failed to fetch trips. Please try again.');

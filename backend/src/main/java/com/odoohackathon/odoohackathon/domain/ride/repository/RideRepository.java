@@ -14,8 +14,8 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     
     // For Ride Discovery: searching based on locations, waypoints, and departure time
     @Query("SELECT r FROM Ride r WHERE " +
-           "(LOWER(r.pickupLocation) LIKE LOWER(CONCAT('%', :pickupLocation, '%')) OR LOWER(r.routeWaypoints) LIKE LOWER(CONCAT('%', :pickupLocation, '%'))) " +
-           "AND (LOWER(r.destination) LIKE LOWER(CONCAT('%', :destination, '%')) OR LOWER(r.routeWaypoints) LIKE LOWER(CONCAT('%', :destination, '%'))) " +
+           "(LOWER(r.pickupLocation) LIKE LOWER(CONCAT('%', :pickupLocation, '%')) OR LOWER(COALESCE(r.routeWaypoints, '')) LIKE LOWER(CONCAT('%', :pickupLocation, '%'))) " +
+           "AND (LOWER(r.destination) LIKE LOWER(CONCAT('%', :destination, '%')) OR LOWER(COALESCE(r.routeWaypoints, '')) LIKE LOWER(CONCAT('%', :destination, '%'))) " +
            "AND r.departureTime >= :departureTime AND r.availableSeats >= :seats")
     List<Ride> findRidesByLocationsAndSeats(
             @org.springframework.data.repository.query.Param("pickupLocation") String pickupLocation, 
