@@ -23,4 +23,8 @@ export const rideService = {
     const response = await api.get('/rides/locations');
     return response.data;
   },
+  deleteRide: async (id) => {
+    const response = await api.delete(`/rides/${id}`);
+    return response.data;
+  }
 };

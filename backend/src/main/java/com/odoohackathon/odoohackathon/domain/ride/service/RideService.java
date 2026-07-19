@@ -11,6 +11,7 @@ import com.odoohackathon.odoohackathon.domain.vehicle.dto.VehicleDTO;
 import com.odoohackathon.odoohackathon.domain.vehicle.entity.Vehicle;
 import com.odoohackathon.odoohackathon.domain.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
+import com.odoohackathon.odoohackathon.domain.trip.entity.Trip;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,22 +112,48 @@ public class RideService {
     public RideDTO updateMyRide(Long id, String userEmail, RideRequest request) {
         Ride ride = rideRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
-        
+
         if (!ride.getDriver().getEmail().equals(userEmail)) {
             throw new IllegalArgumentException("Unauthorized to edit this ride");
         }
 
-        if (ride.getAvailableSeats() < ride.getVehicle().getSeatingCapacity()) {
-            throw new IllegalStateException("Cannot edit a ride that already has confirmed bookings.");
+        // If the ride already has booked trips, restrict editing of pickup/destination
+        if (ride.getTrips() != null && !ride.getTrips().isEmpty()) {
+            // Allow only time, fare and waypoints to be updated
+            ride.setDepartureTime(request.getDepartureTime());
+            ride.setFarePerSeat(request.getFarePerSeat());
+            ride.setRouteWaypoints(request.getRouteWaypoints());
+        } else {
+            // No bookings yet – full edit allowed
+            ride.setPickupLocation(request.getPickupLocation());
+            ride.setDestination(request.getDestination());
+            ride.setDepartureTime(request.getDepartureTime());
+            ride.setFarePerSeat(request.getFarePerSeat());
+            ride.setRouteWaypoints(request.getRouteWaypoints());
         }
 
-        ride.setPickupLocation(request.getPickupLocation());
-        ride.setDestination(request.getDestination());
-        ride.setDepartureTime(request.getDepartureTime());
-        ride.setFarePerSeat(request.getFarePerSeat());
-        ride.setRouteWaypoints(request.getRouteWaypoints());
-
         return mapToDto(rideRepository.save(ride));
+    }
+
+    public void deleteRide(Long id, String userEmail) {
+        Ride ride = rideRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
+        
+        if (!ride.getDriver().getEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("Unauthorized to delete this ride");
+        }
+
+        // Cancel all associated trips
+        if (ride.getTrips() != null && !ride.getTrips().isEmpty()) {
+            for (Trip trip : ride.getTrips()) {
+                if (trip.getStatus() != com.odoohackathon.odoohackathon.domain.trip.entity.TripStatus.CANCELLED) {
+                    trip.setStatus(com.odoohackathon.odoohackathon.domain.trip.entity.TripStatus.CANCELLED);
+                    // Usually we would also refund the passenger here via Wallet, but this is a simplified hackathon implementation.
+                }
+            }
+        }
+        
+        rideRepository.delete(ride);
     }
 
     private RideDTO mapToDto(Ride ride) {

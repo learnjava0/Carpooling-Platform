@@ -49,7 +49,7 @@ export const paymentService = {
       currency: orderData.currency,
       name: 'RideConnect Carpooling',
       description: 'Trip Payment',
-      order_id: orderData.id,
+      order_id: orderData.razorpayOrderId,
       handler: async function (response) {
         paymentSuccess = true;
         try {

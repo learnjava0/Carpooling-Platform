@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
-@Transactional
 public class AdminController {
 
     private final UserRepository userRepository;
@@ -93,10 +92,26 @@ public class AdminController {
         return ResponseEntity.ok(mapUserToDto(user));
     }
 
+    private final com.odoohackathon.odoohackathon.domain.payment.repository.PaymentTransactionRepository transactionRepository;
+
     @DeleteMapping("/users/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        userRepository.deleteById(userId);
-        return ResponseEntity.ok().build();
+    @Transactional
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
+        try {
+            Wallet wallet = walletRepository.findByUserId(userId).orElse(null);
+            if (wallet != null) {
+                transactionRepository.deleteAll(transactionRepository.findByWalletId(wallet.getId()));
+                walletRepository.delete(wallet);
+            }
+            
+            List<Vehicle> vehicles = vehicleRepository.findByOwnerId(userId);
+            vehicleRepository.deleteAll(vehicles);
+            
+            userRepository.deleteById(userId);
+            return ResponseEntity.ok().build();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Cannot delete this user because they have associated trips or rides."));
+        }
     }
 
     @DeleteMapping("/vehicles/{vehicleId}")
@@ -169,6 +184,7 @@ public class AdminController {
     }
 
     @GetMapping("/users")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         // Fetch all users and map to DTOs without wallet/balance info
         List<UserDTO> users = userRepository.findAll().stream()
@@ -191,6 +207,7 @@ public class AdminController {
     }
 
     @GetMapping("/employees")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<UserDTO>> getEmployees(Authentication authentication) {
         return ResponseEntity.ok(adminService.getCompanyEmployees(authentication.getName()));
     }

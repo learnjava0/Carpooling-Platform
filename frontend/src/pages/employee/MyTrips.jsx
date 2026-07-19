@@ -6,30 +6,34 @@ import { rideService } from '../../services/rideService';
 import { useAuth } from '../../context/AuthContext';
 import { MapPin, Clock, CreditCard, CheckCircle2, AlertCircle, RefreshCw, Car, User, Map } from 'lucide-react';
 import TripMapModal from '../../components/TripMapModal';
+import EditRideModal from '../../components/EditRideModal';
 
 const MyTrips = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('passenger');
   const [trips, setTrips] = useState([]);
-  const [hostedRides, setHostedRides] = useState([]);
+  const [upcomingRides, setUpcomingRides] = useState([]);
+  const [pastRides, setPastRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paymentStatus, setPaymentStatus] = useState({ tripId: null, status: '', message: '' });
   const [mapTrip, setMapTrip] = useState(null);
+  const [editRide, setEditRide] = useState(null); // ride object for editing
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const passengerTrips = await tripService.getMyTrips();
       setTrips(passengerTrips);
-      
+
       const driverRides = await rideService.getDriverRides();
-      setHostedRides(driverRides.filter(r => {
-        const isPast = new Date(r.departureTime) < new Date();
-        const hasActiveTrips = r.trips && r.trips.some(t => !['COMPLETED', 'CANCELLED', 'PAYMENT_COMPLETED'].includes(t.status));
-        return isPast && !hasActiveTrips;
-      }));
+      const now = new Date();
+      const upcoming = driverRides.filter(r => new Date(r.departureTime) >= now);
+      const past = driverRides.filter(r => new Date(r.departureTime) < now);
+      setUpcomingRides(upcoming);
+      setPastRides(past);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch trips. Please try again.');
@@ -63,6 +67,22 @@ const MyTrips = () => {
       );
     } catch (err) {
       setPaymentStatus({ tripId: trip.id, status: 'error', message: 'Failed to initialize payment.' });
+    }
+  };
+
+  const handleEditRide = (ride) => {
+    setEditRide(ride);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCancelRide = async (rideId) => {
+    if (!window.confirm('Are you sure you want to cancel this ride?')) return;
+    try {
+      await rideService.deleteRide(rideId);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to cancel ride.');
     }
   };
 
@@ -273,52 +293,103 @@ const MyTrips = () => {
       )}
 
       {activeTab === 'driver' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {hostedRides.map(ride => (
-            <div key={ride.id} className="card p-6 flex flex-col h-full">
-              <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
-                <div>
-                  <div className="font-semibold text-slate-900 dark:text-white">Route: {ride.pickupLocation} to {ride.destination}</div>
-                  <div className="text-sm font-medium mt-1 flex justify-between items-center w-full">
-                    <div>
-                      Status: <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{ride.status}</span>
+        <>
+          {/* Upcoming Hosted Rides */}
+          <h2 className="text-xl font-semibold mt-6 mb-4 dark:text-white">Upcoming Hosted Rides</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {upcomingRides.map(ride => (
+              <div key={ride.id} className="card p-6 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white">Route: {ride.pickupLocation} to {ride.destination}</div>
+                    <div className="text-sm font-medium mt-1 flex justify-between items-center w-full">
+                      <div>
+                        Status: <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-700">{ride.status}</span>
+                      </div>
+                      <button onClick={() => setMapTrip(ride)} className="flex items-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 dark:bg-slate-800 px-3 py-1.5 rounded-full transition-colors ml-4 mt-2">
+                        <Map className="w-3 h-3 mr-1" /> View Map
+                      </button>
                     </div>
-                    <button onClick={() => setMapTrip(ride)} className="flex items-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 dark:bg-slate-800 px-3 py-1.5 rounded-full transition-colors ml-4 mt-2">
-                      <Map className="w-3 h-3 mr-1" /> View Map
-                    </button>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-primary-600 dark:text-primary-400">₹{ride.farePerSeat}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-primary-600 dark:text-primary-400">₹{ride.farePerSeat}</div>
+                <div className="flex-1 space-y-4 mb-6">
+                  <div className="text-sm text-slate-500">
+                    Departs: {new Date(ride.departureTime).toLocaleDateString()} {new Date(ride.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleEditRide(ride)} className="flex-1 border border-slate-200 dark:border-slate-700 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">Edit Ride</button>
+                    <button onClick={() => handleCancelRide(ride.id)} className="flex-1 border border-red-200 bg-red-50 text-red-600 py-1.5 rounded-lg text-sm font-medium hover:bg-red-100 transition">Cancel Ride</button>
+                  </div>
                 </div>
               </div>
-              <div className="flex-1 space-y-4 mb-6">
-                <div className="text-sm font-medium text-slate-900 dark:text-white">
-                  Completed on: {new Date(ride.departureTime).toLocaleDateString()}
-                </div>
-                <div className="text-sm text-slate-500">
-                  Total Seats: {ride.totalSeats} | Passengers: {ride.trips?.length || 0}
-                </div>
+            ))}
+            {upcomingRides.length === 0 && (
+              <div className="col-span-full py-12 text-center text-slate-500 card border-dashed">
+                <Car className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                <p>You have no upcoming hosted rides.</p>
               </div>
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 mt-auto text-center text-sm text-green-600 font-medium flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 mr-2" /> Hosted Successfully
-              </div>
-            </div>
-          ))}
+            )}
+          </div>
 
-          {hostedRides.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-500 card border-dashed">
-              <Car className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-              <p>You haven't completed any hosted rides yet.</p>
-            </div>
-          )}
-        </div>
+          {/* Past Hosted Rides */}
+          <h2 className="text-xl font-semibold mt-8 mb-4 dark:text-white">Past Hosted Rides</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {pastRides.map(ride => (
+              <div key={ride.id} className="card p-6 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white">Route: {ride.pickupLocation} to {ride.destination}</div>
+                    <div className="text-sm font-medium mt-1 flex justify-between items-center w-full">
+                      <div>
+                        Status: <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{ride.status}</span>
+                      </div>
+                      <button onClick={() => setMapTrip(ride)} className="flex items-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 dark:bg-slate-800 px-3 py-1.5 rounded-full transition-colors ml-4 mt-2">
+                        <Map className="w-3 h-3 mr-1" /> View Map
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-primary-600 dark:text-primary-400">₹{ride.farePerSeat}</div>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-4 mb-6">
+                  <div className="text-sm font-medium text-slate-900 dark:text-white">
+                    Completed on: {new Date(ride.departureTime).toLocaleDateString()}
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    Total Seats: {ride.totalSeats} | Passengers: {ride.trips?.length || 0}
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 mt-auto text-center text-sm text-green-600 font-medium flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 mr-2" /> Hosted Successfully
+                </div>
+              </div>
+            ))}
+            {pastRides.length === 0 && (
+              <div className="col-span-full py-12 text-center text-slate-500 card border-dashed">
+                <Car className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                <p>You haven't completed any hosted rides yet.</p>
+              </div>
+            )}
+          </div>
+        </>
       )}
       <TripMapModal 
         isOpen={!!mapTrip} 
         trip={mapTrip} 
         onClose={() => setMapTrip(null)} 
       />
+      {/* Edit Ride Modal */}
+      {isEditModalOpen && editRide && (
+        <EditRideModal
+          ride={editRide}
+          onClose={() => { setIsEditModalOpen(false); setEditRide(null); }}
+          onSuccess={() => { setIsEditModalOpen(false); setEditRide(null); fetchData(); }}
+        />
+      )}
     </div>
   );
 };

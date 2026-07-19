@@ -104,4 +104,9 @@ public class PaymentController {
         paymentService.logFailedPayment(authentication.getName(), request);
         return ResponseEntity.ok().build();
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        return ResponseEntity.status(500).body("Error: " + e.getMessage() + " | Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "none"));
+    }
 }

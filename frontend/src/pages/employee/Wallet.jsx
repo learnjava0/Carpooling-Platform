@@ -62,7 +62,8 @@ const Wallet = () => {
         (err) => {
           // Error Callback
           console.error(err);
-          setError('Payment failed or cancelled.');
+          const backendError = err.response && err.response.data ? err.response.data : err.message;
+          setError('Payment failed: ' + backendError);
           setProcessingRecharge(false);
         }
       );

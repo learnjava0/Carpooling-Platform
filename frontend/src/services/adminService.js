@@ -23,6 +23,13 @@ export const adminService = {
 
   onboardDriver: async (driverData) => {
     const response = await api.post('/auth/register', driverData);
+    if (driverData.role && driverData.role !== 'EMPLOYEE' && response.data?.user?.id) {
+      try {
+        await api.put(`/admin/users/${response.data.user.id}/role?role=${driverData.role}`);
+      } catch (err) {
+        console.error("Failed to update role during onboarding", err);
+      }
+    }
     return response.data;
   },
 
