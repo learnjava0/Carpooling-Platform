@@ -41,6 +41,8 @@ export const paymentService = {
   },
 
   openRazorpayWidget: (orderData, user, onSuccess, onError) => {
+    let paymentSuccess = false;
+
     const options = {
       key: 'rzp_test_TEtkcWeUnkc6xQ', // Provided Razorpay Key
       amount: Math.round(orderData.amount * 100), // Razorpay expects amount in paise
@@ -49,6 +51,7 @@ export const paymentService = {
       description: 'Trip Payment',
       order_id: orderData.id,
       handler: async function (response) {
+        paymentSuccess = true;
         try {
           const verificationResult = await paymentService.verifyPayment({
             razorpayOrderId: response.razorpay_order_id,
@@ -74,15 +77,17 @@ export const paymentService = {
       },
       modal: {
         ondismiss: function() {
-          paymentService.logFailedPayment({ amount: orderData.amount / 100, paymentMethod: 'RAZORPAY', purpose: orderData.purpose, tripId: orderData.tripId });
-          onError(new Error('Payment window closed by user'));
+          if (!paymentSuccess) {
+            paymentService.logFailedPayment({ amount: orderData.amount, paymentMethod: 'RAZORPAY', purpose: orderData.purpose, tripId: orderData.tripId });
+            onError(new Error('Payment window closed by user'));
+          }
         }
       }
     };
 
     const rzp = new window.Razorpay(options);
     rzp.on('payment.failed', function (response){
-      paymentService.logFailedPayment({ amount: orderData.amount / 100, paymentMethod: 'RAZORPAY', purpose: orderData.purpose, tripId: orderData.tripId });
+      paymentService.logFailedPayment({ amount: orderData.amount, paymentMethod: 'RAZORPAY', purpose: orderData.purpose, tripId: orderData.tripId });
       onError(response.error);
     });
     rzp.open();
