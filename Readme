@@ -76,7 +76,7 @@ The application is designed with **role-based access control (RBAC)**, supportin
 ## 🏗️ System Architecture
 
 <p align="center">
-  <img src="frontend/src/assets/architecture_diagram.png" alt="System Architecture" width="650"/>
+  <img src="docs/architecture_diagram.png" alt="System Architecture" width="650"/>
 </p>
 
 The platform follows a **layered microservice-ready architecture**:
@@ -418,7 +418,7 @@ BOOKED → IN_PROGRESS → COMPLETED
   </tr>
   <tr>
     <td><img src="docs/ride_anaysis.png" alt="Ride Analytics" width="400"/></td>
-    <td><img src="docs/vehivle details.png" alt="Vehicle Details" width="400"/></td>
+    <td><img src="docs/vehivle%20details.png" alt="Vehicle Details" width="400"/></td>
   </tr>
 </table>
 
