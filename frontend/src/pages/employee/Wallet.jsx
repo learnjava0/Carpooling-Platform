@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { paymentService } from '../../services/paymentService';
-import { Wallet as WalletIcon, Plus, History, RefreshCw, IndianRupee, ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { Wallet as WalletIcon, Plus, History, RefreshCw, IndianRupee, ArrowDownRight, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 
 const Wallet = () => {
   const { user } = useAuth();
@@ -10,6 +10,7 @@ const Wallet = () => {
   const [rechargeAmount, setRechargeAmount] = useState('');
   const [processingRecharge, setProcessingRecharge] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [transactions, setTransactions] = useState([]);
 
   const fetchWallet = async () => {
@@ -37,6 +38,7 @@ const Wallet = () => {
     
     setProcessingRecharge(true);
     setError('');
+    setSuccessMsg('');
     
     try {
       const amountFloat = parseFloat(rechargeAmount);
@@ -54,12 +56,14 @@ const Wallet = () => {
           await fetchWallet();
           setRechargeAmount('');
           setProcessingRecharge(false);
-          alert(`Successfully added ₹${rechargeAmount} to your wallet!`);
+          setSuccessMsg(`Successfully added ₹${amountFloat.toFixed(2)} to your wallet!`);
+          setTimeout(() => setSuccessMsg(''), 5000);
         },
         (err) => {
           // Error Callback
           console.error(err);
-          setError('Payment failed or cancelled.');
+          const backendError = err.response && err.response.data ? err.response.data : err.message;
+          setError('Payment failed: ' + backendError);
           setProcessingRecharge(false);
         }
       );
@@ -84,6 +88,13 @@ const Wallet = () => {
       {error && (
         <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
           {error}
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 flex items-center">
+          <CheckCircle2 className="w-5 h-5 mr-2" />
+          {successMsg}
         </div>
       )}
 

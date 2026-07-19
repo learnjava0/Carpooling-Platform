@@ -48,8 +48,8 @@ public class AdminAuditController {
                     .build());
             return ResponseEntity.ok(logs);
         } catch (Exception e) {
-            // Return empty list gracefully if ClickHouse is missing during the hackathon demo
-            return ResponseEntity.ok(List.of());
+            // Return in-memory logs as a fallback
+            return ResponseEntity.ok(com.odoohackathon.odoohackathon.domain.audit.service.AuditService.inMemoryLogs);
         }
     }
 }

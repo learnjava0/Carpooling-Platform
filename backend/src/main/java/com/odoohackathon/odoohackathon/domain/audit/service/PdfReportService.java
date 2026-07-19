@@ -26,8 +26,13 @@ public class PdfReportService {
     }
 
     public byte[] generateAuditPdfReport() throws DocumentException {
-        String sql = "SELECT event_time, event_type, user_email, details, ip_address FROM audit_logs ORDER BY event_time DESC LIMIT 200";
-        List<AuditLog> logs = clickhouseJdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
+        List<AuditLog> logs;
+        try {
+            String sql = "SELECT event_time, event_type, user_email, details, ip_address FROM audit_logs ORDER BY event_time DESC LIMIT 200";
+            logs = clickhouseJdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
+        } catch (Exception e) {
+            logs = AuditService.inMemoryLogs;
+        }
 
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();

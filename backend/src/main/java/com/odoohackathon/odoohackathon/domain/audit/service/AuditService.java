@@ -40,13 +40,22 @@ public class AuditService {
         }
     }
 
+    public static final java.util.List<com.odoohackathon.odoohackathon.domain.audit.dto.AuditLog> inMemoryLogs = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+
     @Async
     public void logEvent(String eventType, String userEmail, String details, String ipAddress) {
         try {
+            inMemoryLogs.add(0, com.odoohackathon.odoohackathon.domain.audit.dto.AuditLog.builder()
+                    .eventTime(LocalDateTime.now().toString())
+                    .eventType(eventType)
+                    .userEmail(userEmail)
+                    .details(details)
+                    .ipAddress(ipAddress)
+                    .build());
+            
             String insertSql = "INSERT INTO audit_logs (event_time, event_type, user_email, details, ip_address) VALUES (?, ?, ?, ?, ?)";
             clickhouseJdbcTemplate.update(insertSql, LocalDateTime.now(), eventType, userEmail, details, ipAddress);
         } catch (Exception e) {
-            // Graceful fallback if ClickHouse is down so the main app doesn't crash
             log.warn("[FALLBACK AUDIT LOG] Type: {}, User: {}, Details: {}", eventType, userEmail, details);
         }
     }

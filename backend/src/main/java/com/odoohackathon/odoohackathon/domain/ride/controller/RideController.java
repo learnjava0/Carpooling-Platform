@@ -57,4 +57,14 @@ public class RideController {
         String userEmail = authentication.getName();
         return ResponseEntity.ok(rideService.updateMyRide(id, userEmail, request));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMyRide(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        rideService.deleteRide(id, userEmail);
+        return ResponseEntity.noContent().build();
+    }
 }

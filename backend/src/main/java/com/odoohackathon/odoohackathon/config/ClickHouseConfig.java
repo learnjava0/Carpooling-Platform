@@ -22,14 +22,7 @@ public class ClickHouseConfig {
 
     @Bean(name = "clickhouseJdbcTemplate")
     public JdbcTemplate clickhouseJdbcTemplate() {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setDriverClassName("com.clickhouse.jdbc.ClickHouseDriver");
-        config.setConnectionTimeout(5000); // Fail fast if ClickHouse is not running
-        config.setInitializationFailTimeout(-1); // Do not crash the app on startup if ClickHouse is down
-        config.setMaximumPoolSize(10);
-        return new JdbcTemplate(new HikariDataSource(config));
+        // Return a dummy template to avoid HikariCP connection retry loops when ClickHouse is unavailable.
+        return new JdbcTemplate(new org.springframework.jdbc.datasource.DriverManagerDataSource());
     }
 }
